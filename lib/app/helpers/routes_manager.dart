@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:uber_clone_passenger/app/pages/welcome_page.dart';
 
 import '../exports/pages.dart';
 

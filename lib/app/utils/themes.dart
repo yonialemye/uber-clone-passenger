@@ -32,6 +32,7 @@ void lightStatusAndNavigationBar() {
 class Themes {
   static get dark {
     return ThemeData(
+      fontFamily: 'Bolt-Reg',
       brightness: Brightness.dark,
       scaffoldBackgroundColor: Coloors.darkBg,
       primaryColor: Coloors.blueDark,
@@ -40,6 +41,7 @@ class Themes {
 
   static get light {
     return ThemeData(
+      fontFamily: 'Bolt-Reg',
       brightness: Brightness.light,
       scaffoldBackgroundColor: Coloors.whiteBg,
       primaryColor: Coloors.blueLight,
