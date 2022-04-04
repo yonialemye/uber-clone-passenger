@@ -4,8 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class Values {
   static const Size desingSize = Size(411, 875);
 
+  static double height10 = 10.h;
   static double height20 = 20.h;
   static double height30 = 30.h;
+  static double height40 = 40.h;
   static double height50 = 50.h;
 
   static double width20 = 20.w;

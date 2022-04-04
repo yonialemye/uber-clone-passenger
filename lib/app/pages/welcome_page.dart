@@ -3,6 +3,7 @@ import 'package:day_night_switcher/day_night_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../exports/pages.dart';
 import '../exports/constants.dart';
 import '../exports/services.dart';
 import '../exports/widgets.dart';
@@ -37,60 +38,65 @@ class _WelcomePageState extends State<WelcomePage> {
         body: Column(
           children: [
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(Values.radius30)),
-                ),
-                child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: EdgeInsets.only(right: Values.width20, top: Values.height50),
-                        child: SizedBox(
-                          height: Values.height50,
-                          width: Values.height50,
-                          child: ThemeSwitcher(
-                            builder: (context) {
-                              return DayNightSwitcher(
-                                dayBackgroundColor: Coloors.darkBg.withOpacity(0.3),
-                                nightBackgroundColor: Coloors.darkBg,
-                                isDarkModeEnabled: isDarkModeEnabled(context),
-                                onStateChanged: (value) async {
-                                  var themeName = value ? 'dark' : 'light';
-                                  var service = await ThemeServices.instance
-                                    ..save(themeName);
-                                  var theme = service.getByName(themeName);
-                                  if (mounted) ThemeSwitcher.of(context).changeTheme(theme: theme);
-                                },
-                              );
-                            },
+              child: SingleChildScrollView(
+                child: Container(
+                  height: screenHeight * .75,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(Values.radius30)),
+                  ),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: Values.width20, top: Values.height50),
+                          child: SizedBox(
+                            height: Values.height50,
+                            width: Values.height50,
+                            child: ThemeSwitcher(
+                              builder: (context) {
+                                return DayNightSwitcher(
+                                  dayBackgroundColor: Coloors.darkBg.withOpacity(0.3),
+                                  nightBackgroundColor: Coloors.darkBg,
+                                  isDarkModeEnabled: isDarkModeEnabled(context),
+                                  onStateChanged: (value) async {
+                                    var themeName = value ? 'dark' : 'light';
+                                    var service = await ThemeServices.instance
+                                      ..save(themeName);
+                                    var theme = service.getByName(themeName);
+                                    if (mounted) {
+                                      ThemeSwitcher.of(context).changeTheme(theme: theme);
+                                    }
+                                  },
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: Values.height20),
-                    MyText(
-                      text: 'Uber',
-                      fontSize: Values.font50,
-                      textColor: Coloors.whiteBg,
-                    ),
-                    MyText(
-                      text: 'Get there.',
-                      fontSize: Values.font20,
-                      textColor: Coloors.whiteBg,
-                    ),
-                    const Spacer(),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Image.asset(
-                        'images/bajaj.png',
-                        width: 240.w,
+                      SizedBox(height: Values.height20),
+                      MyText(
+                        text: 'Uber',
+                        fontSize: Values.font50,
+                        textColor: Coloors.whiteBg,
                       ),
-                    ),
-                    const Spacer(),
-                  ],
+                      MyText(
+                        text: 'Get there.',
+                        fontSize: Values.font20,
+                        textColor: Coloors.whiteBg,
+                      ),
+                      const Spacer(),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Image.asset(
+                          'images/bajaj.png',
+                          width: 240.w,
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -104,8 +110,8 @@ class _WelcomePageState extends State<WelcomePage> {
                     vertical: Values.height30,
                   ),
                   child: MyElevatedButton(
+                    onPressed: navigateToSignupPage,
                     child: const MyText(text: 'Get Started'),
-                    onPressed: () {},
                   ),
                 ),
               ),
@@ -114,5 +120,9 @@ class _WelcomePageState extends State<WelcomePage> {
         ),
       ),
     );
+  }
+
+  void navigateToSignupPage() {
+    Navigator.of(context).pushNamed(SignupPage.routeName);
   }
 }
