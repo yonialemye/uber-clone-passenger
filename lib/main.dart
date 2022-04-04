@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:uber_clone_passenger/app/helpers/routes_manager.dart';
 
-import 'pages/signup_page.dart';
+import 'app/pages/signup_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       title: 'Uber Passenger',
       home: SignupPage(),
+      onGenerateRoute: routesManager,
     );
   }
 }
