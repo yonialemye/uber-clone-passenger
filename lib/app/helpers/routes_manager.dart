@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:uber_clone_passenger/app/pages/signup_page.dart';
+
+import '../exports/pages.dart';
 
 Route? routesManager(RouteSettings settings) {
   switch (settings.name) {

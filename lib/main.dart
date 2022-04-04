@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:uber_clone_passenger/app/helpers/routes_manager.dart';
 
-import 'app/pages/signup_page.dart';
-import 'app/utils/values.dart';
+import 'app/exports/constants.dart' show Values;
+import 'app/exports/helpers.dart' show routesManager;
+import 'app/exports/pages.dart' show SignupPage;
 
 void main() {
   runApp(const MyApp());
@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
       child: const SignupPage(),
       builder: (context, home) {
         return MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'Uber Passenger',
           home: home,
           onGenerateRoute: routesManager,
