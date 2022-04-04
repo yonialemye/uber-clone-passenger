@@ -36,6 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   page_transition: ^2.0.9
   flutter_screenutil: ^5.5.3+2
+  shared_preferences: ^2.0.15
+  day_night_switcher: ^0.2.0+1
+  animated_theme_switcher: ^2.0.6
 
 dev_dependencies:
   flutter_test:

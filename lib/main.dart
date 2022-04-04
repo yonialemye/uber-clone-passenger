@@ -1,16 +1,23 @@
+import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'app/exports/constants.dart' show Values;
 import 'app/exports/helpers.dart' show routesManager;
-import 'app/exports/pages.dart' show SignupPage;
+import 'app/exports/pages.dart' show WelcomePage;
+import 'app/exports/services.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final themeServise = await ThemeServices.instance;
+  var initTheme = themeServise.initial;
+  runApp(MyApp(theme: initTheme));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  final ThemeData theme;
+
+  const MyApp({Key? key, required this.theme}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +25,17 @@ class MyApp extends StatelessWidget {
       designSize: Values.desingSize,
       minTextAdapt: true,
       splitScreenMode: true,
-      child: const SignupPage(),
+      child: const WelcomePage(),
       builder: (context, home) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Uber Passenger',
-          home: home,
-          onGenerateRoute: routesManager,
+        return ThemeProvider(
+          initTheme: theme,
+          builder: (_, theme) => MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Uber Passenger',
+            theme: theme,
+            home: home,
+            onGenerateRoute: routesManager,
+          ),
         );
       },
     );
