@@ -11,6 +11,7 @@ class MyTextField extends StatelessWidget {
     this.hintText,
     required this.prefixIcon,
     this.prefix,
+    this.errorMessage,
   }) : super(key: key);
 
   final TextEditingController controller;
@@ -19,6 +20,7 @@ class MyTextField extends StatelessWidget {
   final String? hintText;
   final IconData prefixIcon;
   final String? prefix;
+  final String? errorMessage;
 
   String? textFieldValidator(value) {
     if (value == null || value.isEmpty) {
@@ -46,6 +48,7 @@ class MyTextField extends StatelessWidget {
       obscureText: keyBoardType == TextInputType.visiblePassword ? true : false,
       validator: textFieldValidator,
       decoration: InputDecoration(
+        errorText: errorMessage,
         prefixIcon: Icon(prefixIcon),
         prefix: prefix != null ? Text(prefix!) : null,
         labelText: labelText,

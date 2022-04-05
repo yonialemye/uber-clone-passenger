@@ -22,32 +22,56 @@ class FirebaseServices {
     required String password,
     required String phoneNumber,
   }) async {
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    final user = getCurrentUser();
-    if (user == null) return Operation.failed;
+      final user = getCurrentUser();
+      if (user == null) return Operation.failed;
 
-    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('passengers/${user.uid}');
-    dbRef.set({
-      'full-name': fullName,
-      'email-address': email,
-      'phone-number': phoneNumber,
-    });
-    return Operation.success;
+      DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('passengers/${user.uid}');
+      dbRef.set({
+        'full-name': fullName,
+        'email-address': email,
+        'phone-number': phoneNumber,
+      });
+      return Operation.success;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+          return 'Enter a valid email address';
+        case 'email-already-in-use':
+          return 'This email is taken, try another.';
+        default:
+          return e.code;
+      }
+    }
   }
 
   static loginPassenger({
     required String email,
     required String password,
   }) async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
 
-    final user = getCurrentUser();
-    if (user == null) return Operation.failed;
+      final user = getCurrentUser();
+      if (user == null) return Operation.failed;
 
-    return Operation.success;
+      return Operation.success;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+          return 'Enter a valid email address';
+        case 'user-not-found':
+          return 'User not found, Use another email.';
+        case 'wrong-password':
+          return 'Wrong password';
+        default:
+          return e.code;
+      }
+    }
   }
 }

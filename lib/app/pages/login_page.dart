@@ -19,6 +19,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
 
   final GlobalKey<FormState> _loginFormKey = GlobalKey<FormState>();
+  String? emailErrorMessage;
+  String? passwordErrorMessage;
 
   @override
   void dispose() {
@@ -29,12 +31,25 @@ class _LoginPageState extends State<LoginPage> {
 
   Future loginPassenger() async {
     FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      emailErrorMessage = null;
+      passwordErrorMessage = null;
+    });
     if (!_loginFormKey.currentState!.validate()) return;
 
     final result = await FirebaseServices.loginPassenger(
       email: emailController.text.trim(),
       password: passwordController.text.trim(),
     );
+
+    if (result is String) {
+      if (result == 'Wrong password') {
+        setState(() => passwordErrorMessage = result);
+      } else {
+        setState(() => emailErrorMessage = result);
+      }
+      return;
+    }
 
     if (result == Operation.success) toHomePage();
   }
@@ -65,6 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                       hintText: 'Enter your email address',
                       prefixIcon: Icons.email_outlined,
                       keyBoardType: TextInputType.emailAddress,
+                      errorMessage: emailErrorMessage,
                     ),
                     SizedBox(height: Values.height20),
                     MyTextField(
@@ -73,6 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                       hintText: 'Enter your password',
                       prefixIcon: Icons.lock_outline,
                       keyBoardType: TextInputType.visiblePassword,
+                      errorMessage: passwordErrorMessage,
                     ),
                     SizedBox(height: Values.height30),
                     Hero(

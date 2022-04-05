@@ -22,6 +22,7 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController phoneNumberController = TextEditingController();
 
   final GlobalKey<FormState> _signupFormKey = GlobalKey<FormState>();
+  String? emailErrorMessage;
 
   @override
   void dispose() {
@@ -34,6 +35,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Future signupPassenger() async {
     FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => emailErrorMessage = null);
     if (!_signupFormKey.currentState!.validate()) return;
 
     final result = await FirebaseServices.signupPassenger(
@@ -42,6 +44,10 @@ class _SignupPageState extends State<SignupPage> {
       password: passwordController.text.trim(),
       phoneNumber: phoneNumberController.text.trim(),
     );
+
+    if (result is String) {
+      setState(() => emailErrorMessage = result);
+    }
 
     if (result == Operation.success) toHomePage();
   }
@@ -80,6 +86,7 @@ class _SignupPageState extends State<SignupPage> {
                       hintText: 'Enter your email address',
                       prefixIcon: Icons.email_outlined,
                       keyBoardType: TextInputType.emailAddress,
+                      errorMessage: emailErrorMessage,
                     ),
                     SizedBox(height: Values.height20),
                     MyTextField(
