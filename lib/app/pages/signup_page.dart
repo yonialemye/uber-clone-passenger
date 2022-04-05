@@ -6,6 +6,7 @@ import 'package:uber_clone_passenger/app/utils/enums.dart';
 
 import '../exports/widgets.dart';
 import '../exports/constants.dart';
+import '../helpers/check_connection.dart';
 
 class SignupPage extends StatefulWidget {
   static const String routeName = '/signup-page';
@@ -35,6 +36,8 @@ class _SignupPageState extends State<SignupPage> {
 
   Future signupPassenger() async {
     FocusManager.instance.primaryFocus?.unfocus();
+    final status = await checkConnection();
+    if (status == Operation.failed) return;
     setState(() => emailErrorMessage = null);
     if (!_signupFormKey.currentState!.validate()) return;
 

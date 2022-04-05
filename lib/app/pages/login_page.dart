@@ -4,6 +4,7 @@ import 'package:uber_clone_passenger/app/services/firebase_services.dart';
 
 import '../exports/constants.dart';
 import '../exports/widgets.dart';
+import '../helpers/check_connection.dart';
 import '../utils/enums.dart';
 
 class LoginPage extends StatefulWidget {
@@ -31,6 +32,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Future loginPassenger() async {
     FocusManager.instance.primaryFocus?.unfocus();
+    final status = await checkConnection();
+    if (status == Operation.failed) return;
     setState(() {
       emailErrorMessage = null;
       passwordErrorMessage = null;
