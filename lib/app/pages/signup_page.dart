@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:uber_clone_passenger/app/exports/pages.dart';
+import 'package:uber_clone_passenger/app/exports/services.dart';
 import 'package:uber_clone_passenger/app/utils/enums.dart';
 
 import '../exports/widgets.dart';
@@ -34,6 +35,15 @@ class _SignupPageState extends State<SignupPage> {
   Future signupPassenger() async {
     FocusManager.instance.primaryFocus?.unfocus();
     if (!_signupFormKey.currentState!.validate()) return;
+
+    final result = await FirebaseServices.signupPassenger(
+      fullName: fullNameController.text.trim(),
+      email: emailController.text.trim(),
+      password: passwordController.text.trim(),
+      phoneNumber: phoneNumberController.text.trim(),
+    );
+
+    if (result == Operation.success) toHomePage();
   }
 
   @override
@@ -191,4 +201,8 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   void toLoginPage() => Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
+  void toHomePage() => Navigator.of(context).pushNamedAndRemoveUntil(
+        HomePage.routeName,
+        (context) => false,
+      );
 }

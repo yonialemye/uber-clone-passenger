@@ -26,6 +26,13 @@ Route? routesManager(RouteSettings settings) {
         duration: const Duration(milliseconds: 500),
         reverseDuration: const Duration(milliseconds: 500),
       );
+    case HomePage.routeName:
+      return PageTransition(
+        child: const HomePage(),
+        type: PageTransitionType.fade,
+        duration: const Duration(milliseconds: 500),
+        reverseDuration: const Duration(milliseconds: 500),
+      );
     default:
       return MaterialPageRoute(
         builder: (context) => const Scaffold(
