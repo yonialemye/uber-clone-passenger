@@ -7,6 +7,7 @@ import '../exports/pages.dart';
 import '../exports/constants.dart';
 import '../exports/services.dart';
 import '../exports/widgets.dart';
+import '../utils/enums.dart';
 
 class WelcomePage extends StatefulWidget {
   static const String routeName = '/welcome-page';
@@ -109,9 +110,12 @@ class _WelcomePageState extends State<WelcomePage> {
                     horizontal: Values.width20,
                     vertical: Values.height30,
                   ),
-                  child: MyElevatedButton(
-                    onPressed: toSignupPage,
-                    child: const MyText(text: 'Get Started'),
+                  child: Hero(
+                    tag: ButtonsHero.elevated,
+                    child: MyElevatedButton(
+                      onPressed: toSignupPage,
+                      child: const MyText(text: 'Get Started'),
+                    ),
                   ),
                 ),
               ),

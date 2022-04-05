@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uber_clone_passenger/app/exports/pages.dart';
+import 'package:uber_clone_passenger/app/utils/enums.dart';
 
 import '../exports/widgets.dart';
 import '../exports/constants.dart';
@@ -53,7 +54,7 @@ class _SignupPageState extends State<SignupPage> {
                       fontSize: Values.font20,
                       textColor: Theme.of(context).textTheme.bodyText2!.color,
                     ),
-                    SizedBox(height: Values.height30),
+                    SizedBox(height: Values.height20),
                     MyTextField(
                       controller: fullNameController,
                       labelText: 'Full Name',
@@ -65,6 +66,7 @@ class _SignupPageState extends State<SignupPage> {
                     MyTextField(
                       controller: emailController,
                       labelText: 'Email',
+                      hintText: 'Enter your email address',
                       prefixIcon: Icons.email_outlined,
                       keyBoardType: TextInputType.emailAddress,
                     ),
@@ -72,7 +74,7 @@ class _SignupPageState extends State<SignupPage> {
                     MyTextField(
                       controller: passwordController,
                       labelText: 'Password',
-                      hintText: 'Enter your password',
+                      hintText: 'Enter new password',
                       prefixIcon: Icons.lock_outline,
                       keyBoardType: TextInputType.visiblePassword,
                     ),
@@ -86,9 +88,12 @@ class _SignupPageState extends State<SignupPage> {
                       keyBoardType: TextInputType.number,
                     ),
                     SizedBox(height: Values.height30),
-                    MyElevatedButton(
-                      onPressed: signupPassenger,
-                      child: const MyText(text: 'Accept & Continue'),
+                    Hero(
+                      tag: ButtonsHero.elevated,
+                      child: MyElevatedButton(
+                        onPressed: signupPassenger,
+                        child: const MyText(text: 'Accept & Continue'),
+                      ),
                     ),
                   ],
                 ),

@@ -1,0 +1,1 @@
+enum ButtonsHero { elevated }

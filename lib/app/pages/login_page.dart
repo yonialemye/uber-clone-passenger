@@ -3,6 +3,7 @@ import 'package:uber_clone_passenger/app/exports/pages.dart';
 
 import '../exports/constants.dart';
 import '../exports/widgets.dart';
+import '../utils/enums.dart';
 
 class LoginPage extends StatefulWidget {
   static const String routeName = '/login-page';
@@ -53,6 +54,7 @@ class _LoginPageState extends State<LoginPage> {
                     MyTextField(
                       controller: emailController,
                       labelText: 'Email',
+                      hintText: 'Enter your email address',
                       prefixIcon: Icons.email_outlined,
                       keyBoardType: TextInputType.emailAddress,
                     ),
@@ -65,9 +67,12 @@ class _LoginPageState extends State<LoginPage> {
                       keyBoardType: TextInputType.visiblePassword,
                     ),
                     SizedBox(height: Values.height30),
-                    MyElevatedButton(
-                      onPressed: loginPassenger,
-                      child: const MyText(text: 'Continue'),
+                    Hero(
+                      tag: ButtonsHero.elevated,
+                      child: MyElevatedButton(
+                        onPressed: loginPassenger,
+                        child: const MyText(text: 'Continue'),
+                      ),
                     ),
                   ],
                 ),
