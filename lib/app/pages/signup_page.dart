@@ -18,6 +18,8 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
 
+  final GlobalKey<FormState> _signupFormKey = GlobalKey<FormState>();
+
   @override
   void dispose() {
     emailController.dispose();
@@ -25,6 +27,11 @@ class _SignupPageState extends State<SignupPage> {
     fullNameController.dispose();
     phoneNumberController.dispose();
     super.dispose();
+  }
+
+  Future signupPassenger() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (!_signupFormKey.currentState!.validate()) return;
   }
 
   @override
@@ -35,52 +42,56 @@ class _SignupPageState extends State<SignupPage> {
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: Values.width20, vertical: Values.height40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: Values.height30),
-                  MyText(
-                    text: 'Create new account, Passenger',
-                    fontSize: Values.font20,
-                    textColor: Theme.of(context).textTheme.bodyText2!.color,
-                  ),
-                  SizedBox(height: Values.height30),
-                  MyTextField(
-                    controller: fullNameController,
-                    labelText: 'Full Name',
-                    prefixIcon: Icons.person_outline,
-                    hintText: 'Enter your full name',
-                  ),
-                  SizedBox(height: Values.height20),
-                  MyTextField(
-                    controller: emailController,
-                    labelText: 'Email',
-                    prefixIcon: Icons.email_outlined,
-                    keyBoardType: TextInputType.emailAddress,
-                  ),
-                  SizedBox(height: Values.height20),
-                  MyTextField(
-                    controller: passwordController,
-                    labelText: 'Password',
-                    hintText: 'Enter your password',
-                    prefixIcon: Icons.lock_outline,
-                    keyBoardType: TextInputType.visiblePassword,
-                  ),
-                  SizedBox(height: Values.height20),
-                  MyTextField(
-                    controller: phoneNumberController,
-                    prefixIcon: Icons.phone,
-                    prefix: '+251 ',
-                    labelText: 'Phone',
-                    hintText: 'Enter your phone number',
-                    keyBoardType: TextInputType.number,
-                  ),
-                  SizedBox(height: Values.height30),
-                  MyElevatedButton(
-                    child: const MyText(text: 'Accept & Continue'),
-                    onPressed: () {},
-                  ),
-                ],
+              child: Form(
+                key: _signupFormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: Values.height30),
+                    MyText(
+                      text: 'Create new account, Passenger',
+                      fontSize: Values.font20,
+                      textColor: Theme.of(context).textTheme.bodyText2!.color,
+                    ),
+                    SizedBox(height: Values.height30),
+                    MyTextField(
+                      controller: fullNameController,
+                      labelText: 'Full Name',
+                      prefixIcon: Icons.person_outline,
+                      hintText: 'Enter your full name',
+                      keyBoardType: TextInputType.text,
+                    ),
+                    SizedBox(height: Values.height20),
+                    MyTextField(
+                      controller: emailController,
+                      labelText: 'Email',
+                      prefixIcon: Icons.email_outlined,
+                      keyBoardType: TextInputType.emailAddress,
+                    ),
+                    SizedBox(height: Values.height20),
+                    MyTextField(
+                      controller: passwordController,
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      prefixIcon: Icons.lock_outline,
+                      keyBoardType: TextInputType.visiblePassword,
+                    ),
+                    SizedBox(height: Values.height20),
+                    MyTextField(
+                      controller: phoneNumberController,
+                      prefixIcon: Icons.phone,
+                      prefix: '+251 ',
+                      labelText: 'Phone',
+                      hintText: 'Enter your phone number',
+                      keyBoardType: TextInputType.number,
+                    ),
+                    SizedBox(height: Values.height30),
+                    MyElevatedButton(
+                      onPressed: signupPassenger,
+                      child: const MyText(text: 'Accept & Continue'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

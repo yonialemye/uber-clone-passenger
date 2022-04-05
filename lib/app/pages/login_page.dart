@@ -16,11 +16,18 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  final GlobalKey<FormState> _loginFormKey = GlobalKey<FormState>();
+
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  Future loginPassenger() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (!_loginFormKey.currentState!.validate()) return;
   }
 
   @override
@@ -31,36 +38,39 @@ class _LoginPageState extends State<LoginPage> {
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: Values.width20, vertical: Values.height40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: Values.height30),
-                  MyText(
-                    text: 'Create new account, Passenger',
-                    fontSize: Values.font20,
-                    textColor: Theme.of(context).textTheme.bodyText2!.color,
-                  ),
-                  SizedBox(height: Values.height20),
-                  MyTextField(
-                    controller: emailController,
-                    labelText: 'Email',
-                    prefixIcon: Icons.email_outlined,
-                    keyBoardType: TextInputType.emailAddress,
-                  ),
-                  SizedBox(height: Values.height20),
-                  MyTextField(
-                    controller: passwordController,
-                    labelText: 'Password',
-                    hintText: 'Enter your password',
-                    prefixIcon: Icons.lock_outline,
-                    keyBoardType: TextInputType.visiblePassword,
-                  ),
-                  SizedBox(height: Values.height30),
-                  MyElevatedButton(
-                    child: const MyText(text: 'Continue'),
-                    onPressed: () {},
-                  ),
-                ],
+              child: Form(
+                key: _loginFormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: Values.height30),
+                    MyText(
+                      text: 'Create new account, Passenger',
+                      fontSize: Values.font20,
+                      textColor: Theme.of(context).textTheme.bodyText2!.color,
+                    ),
+                    SizedBox(height: Values.height20),
+                    MyTextField(
+                      controller: emailController,
+                      labelText: 'Email',
+                      prefixIcon: Icons.email_outlined,
+                      keyBoardType: TextInputType.emailAddress,
+                    ),
+                    SizedBox(height: Values.height20),
+                    MyTextField(
+                      controller: passwordController,
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      prefixIcon: Icons.lock_outline,
+                      keyBoardType: TextInputType.visiblePassword,
+                    ),
+                    SizedBox(height: Values.height30),
+                    MyElevatedButton(
+                      onPressed: loginPassenger,
+                      child: const MyText(text: 'Continue'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
