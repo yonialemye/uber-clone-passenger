@@ -7,7 +7,6 @@ import '../exports/pages.dart';
 import '../exports/constants.dart';
 import '../exports/services.dart';
 import '../exports/widgets.dart';
-import '../utils/enums.dart';
 
 class WelcomePage extends StatefulWidget {
   static const String routeName = '/welcome-page';

@@ -4,13 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'app/exports/constants.dart' show Values;
 import 'app/exports/helpers.dart' show routesManager;
-import 'app/exports/pages.dart' show SignupPage;
+import 'app/exports/pages.dart' show WelcomePage;
 import 'app/exports/services.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseServices.initializeFirebase();
-
   final themeServise = await ThemeServices.instance;
   var initTheme = themeServise.initial;
   runApp(MyApp(theme: initTheme));
@@ -27,7 +26,7 @@ class MyApp extends StatelessWidget {
       designSize: Values.desingSize,
       minTextAdapt: true,
       splitScreenMode: true,
-      child: const SignupPage(),
+      child: const WelcomePage(),
       builder: (context, home) {
         return ThemeProvider(
           initTheme: theme,
