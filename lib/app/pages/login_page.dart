@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:uber_clone_passenger/app/exports/pages.dart';
 import 'package:uber_clone_passenger/app/services/firebase_services.dart';
 
 import '../exports/constants.dart';
+import '../exports/pages.dart';
 import '../exports/widgets.dart';
 import '../helpers/check_connection.dart';
-import '../utils/enums.dart';
 
 class LoginPage extends StatefulWidget {
   static const String routeName = '/login-page';

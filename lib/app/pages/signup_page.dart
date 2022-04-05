@@ -1,12 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:uber_clone_passenger/app/exports/pages.dart';
-import 'package:uber_clone_passenger/app/exports/services.dart';
-import 'package:uber_clone_passenger/app/utils/enums.dart';
 
+import '../exports/helpers.dart';
+import '../exports/services.dart';
+import '../exports/pages.dart';
 import '../exports/widgets.dart';
 import '../exports/constants.dart';
-import '../helpers/check_connection.dart';
 
 class SignupPage extends StatefulWidget {
   static const String routeName = '/signup-page';
