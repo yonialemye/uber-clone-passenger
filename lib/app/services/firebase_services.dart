@@ -38,4 +38,16 @@ class FirebaseServices {
     });
     return Operation.success;
   }
+
+  static loginPassenger({
+    required String email,
+    required String password,
+  }) async {
+    await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+
+    final user = getCurrentUser();
+    if (user == null) return Operation.failed;
+
+    return Operation.success;
+  }
 }

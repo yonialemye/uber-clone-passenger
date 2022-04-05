@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uber_clone_passenger/app/exports/pages.dart';
+import 'package:uber_clone_passenger/app/services/firebase_services.dart';
 
 import '../exports/constants.dart';
 import '../exports/widgets.dart';
@@ -29,6 +30,13 @@ class _LoginPageState extends State<LoginPage> {
   Future loginPassenger() async {
     FocusManager.instance.primaryFocus?.unfocus();
     if (!_loginFormKey.currentState!.validate()) return;
+
+    final result = await FirebaseServices.loginPassenger(
+      email: emailController.text.trim(),
+      password: passwordController.text.trim(),
+    );
+
+    if (result == Operation.success) toHomePage();
   }
 
   @override
@@ -92,4 +100,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void toSignupPage() => Navigator.of(context).pushReplacementNamed(SignupPage.routeName);
+  void toHomePage() => Navigator.of(context).pushNamedAndRemoveUntil(
+        HomePage.routeName,
+        (context) => false,
+      );
 }
