@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:uber_clone_passenger/app/exports/pages.dart';
 import 'package:uber_clone_passenger/app/utils/enums.dart';
@@ -87,7 +88,12 @@ class _SignupPageState extends State<SignupPage> {
                       hintText: 'Enter your phone number',
                       keyBoardType: TextInputType.number,
                     ),
-                    SizedBox(height: Values.height30),
+                    SizedBox(height: Values.height20),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: Values.width20),
+                      child: termsAndPrivacy(),
+                    ),
+                    SizedBox(height: Values.height20),
                     Hero(
                       tag: ButtonsHero.elevated,
                       child: MyElevatedButton(
@@ -106,6 +112,78 @@ class _SignupPageState extends State<SignupPage> {
               const Text("Already have an account? "),
               MyTextButton(onPressed: toLoginPage, text: 'Login here'),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  RichText termsAndPrivacy() {
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        text: 'By creating an account, you are agreeing to our\n',
+        style: TextStyle(
+          color: Theme.of(context).textTheme.bodyText2!.color,
+        ),
+        children: [
+          TextSpan(
+            text: 'Terms of Services',
+            style: TextStyle(
+              color: Theme.of(context).primaryColor,
+              fontFamily: 'Bolt-Bold',
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    content: const MyText(text: 'Hero you go a terms'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Values.radius30 - 10),
+                    ),
+                    actions: [
+                      MyElevatedButton(
+                        child: const MyText(text: 'I agree'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                );
+              },
+          ),
+          TextSpan(
+            text: ' and ',
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyText2!.color,
+            ),
+          ),
+          TextSpan(
+            text: 'Privacy Policy',
+            style: TextStyle(
+              color: Theme.of(context).primaryColor,
+              fontFamily: 'Bolt-Bold',
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    content: const MyText(text: 'Hero you go a privacy'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Values.radius30 - 10),
+                    ),
+                    actions: [
+                      MyElevatedButton(
+                        child: const MyText(text: 'I agree'),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                );
+              },
           ),
         ],
       ),
