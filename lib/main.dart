@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'app/exports/constants.dart' show Values;
 import 'app/exports/helpers.dart' show routesManager;
-import 'app/exports/pages.dart' show SignupPage, WelcomePage;
+import 'app/exports/pages.dart' show LoginPage;
 import 'app/exports/services.dart';
 
 Future<void> main() async {
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       designSize: Values.desingSize,
       minTextAdapt: true,
       splitScreenMode: true,
-      child: const SignupPage(),
+      child: const LoginPage(),
       builder: (context, home) {
         return ThemeProvider(
           initTheme: theme,

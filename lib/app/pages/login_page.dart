@@ -1,29 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:uber_clone_passenger/app/exports/pages.dart';
 
-import '../exports/widgets.dart';
 import '../exports/constants.dart';
+import '../exports/widgets.dart';
 
-class SignupPage extends StatefulWidget {
-  static const String routeName = '/signup-page';
-  const SignupPage({Key? key}) : super(key: key);
+class LoginPage extends StatefulWidget {
+  static const String routeName = '/login-page';
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController fullNameController = TextEditingController();
-  final TextEditingController phoneNumberController = TextEditingController();
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-    fullNameController.dispose();
-    phoneNumberController.dispose();
     super.dispose();
   }
 
@@ -44,13 +40,6 @@ class _SignupPageState extends State<SignupPage> {
                     fontSize: Values.font20,
                     textColor: Theme.of(context).textTheme.bodyText2!.color,
                   ),
-                  SizedBox(height: Values.height30),
-                  MyTextField(
-                    controller: fullNameController,
-                    labelText: 'Full Name',
-                    prefixIcon: Icons.person_outline,
-                    hintText: 'Enter your full name',
-                  ),
                   SizedBox(height: Values.height20),
                   MyTextField(
                     controller: emailController,
@@ -66,18 +55,9 @@ class _SignupPageState extends State<SignupPage> {
                     prefixIcon: Icons.lock_outline,
                     keyBoardType: TextInputType.visiblePassword,
                   ),
-                  SizedBox(height: Values.height20),
-                  MyTextField(
-                    controller: phoneNumberController,
-                    prefixIcon: Icons.phone,
-                    prefix: '+251 ',
-                    labelText: 'Phone',
-                    hintText: 'Enter your phone number',
-                    keyBoardType: TextInputType.number,
-                  ),
                   SizedBox(height: Values.height30),
                   MyElevatedButton(
-                    child: const MyText(text: 'Accept & Continue'),
+                    child: const MyText(text: 'Continue'),
                     onPressed: () {},
                   ),
                 ],
@@ -87,8 +67,8 @@ class _SignupPageState extends State<SignupPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Already have an account? "),
-              MyTextButton(onPressed: toLoginPage, text: 'Login here'),
+              const Text("Don't have an account yet? "),
+              MyTextButton(onPressed: toSignupPage, text: 'Signup here'),
             ],
           ),
         ],
@@ -96,5 +76,5 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  void toLoginPage() => Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
+  void toSignupPage() => Navigator.of(context).pushReplacementNamed(SignupPage.routeName);
 }

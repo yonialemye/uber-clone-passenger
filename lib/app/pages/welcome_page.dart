@@ -110,7 +110,7 @@ class _WelcomePageState extends State<WelcomePage> {
                     vertical: Values.height30,
                   ),
                   child: MyElevatedButton(
-                    onPressed: navigateToSignupPage,
+                    onPressed: toSignupPage,
                     child: const MyText(text: 'Get Started'),
                   ),
                 ),
@@ -122,7 +122,5 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  void navigateToSignupPage() {
-    Navigator.of(context).pushNamed(SignupPage.routeName);
-  }
+  void toSignupPage() => Navigator.of(context).pushNamed(SignupPage.routeName);
 }
