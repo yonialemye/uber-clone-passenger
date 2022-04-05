@@ -9,6 +9,7 @@ import 'app/exports/services.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await FirebaseServices.initializeFirebase();
   final themeServise = await ThemeServices.instance;
   var initTheme = themeServise.initial;
   runApp(MyApp(theme: initTheme));
