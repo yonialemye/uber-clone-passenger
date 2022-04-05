@@ -5,6 +5,7 @@ import '../exports/constants.dart';
 import '../exports/pages.dart';
 import '../exports/widgets.dart';
 import '../helpers/check_connection.dart';
+import '../helpers/show_loading_dialog.dart';
 
 class LoginPage extends StatefulWidget {
   static const String routeName = '/login-page';
@@ -38,12 +39,12 @@ class _LoginPageState extends State<LoginPage> {
       passwordErrorMessage = null;
     });
     if (!_loginFormKey.currentState!.validate()) return;
-
+    showLoadingDialog(context: context, text: 'Please wait...');
     final result = await FirebaseServices.loginPassenger(
       email: emailController.text.trim(),
       password: passwordController.text.trim(),
     );
-
+    closeLoadingDialog();
     if (result is String) {
       if (result == 'Wrong password') {
         setState(() => passwordErrorMessage = result);
@@ -118,6 +119,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  void closeLoadingDialog() => Navigator.of(context).pop();
   void toSignupPage() => Navigator.of(context).pushReplacementNamed(SignupPage.routeName);
   void toHomePage() => Navigator.of(context).pushNamedAndRemoveUntil(
         HomePage.routeName,

@@ -6,6 +6,7 @@ import '../exports/services.dart';
 import '../exports/pages.dart';
 import '../exports/widgets.dart';
 import '../exports/constants.dart';
+import '../helpers/show_loading_dialog.dart';
 
 class SignupPage extends StatefulWidget {
   static const String routeName = '/signup-page';
@@ -24,6 +25,8 @@ class _SignupPageState extends State<SignupPage> {
   final GlobalKey<FormState> _signupFormKey = GlobalKey<FormState>();
   String? emailErrorMessage;
 
+  bool isLoading = true;
+
   @override
   void dispose() {
     emailController.dispose();
@@ -39,13 +42,14 @@ class _SignupPageState extends State<SignupPage> {
     if (status == Operation.failed) return;
     setState(() => emailErrorMessage = null);
     if (!_signupFormKey.currentState!.validate()) return;
-
+    showLoadingDialog(context: context, text: 'Please wait...');
     final result = await FirebaseServices.signupPassenger(
       fullName: fullNameController.text.trim(),
       email: emailController.text.trim(),
       password: passwordController.text.trim(),
       phoneNumber: phoneNumberController.text.trim(),
     );
+    closeLoadingDialog();
 
     if (result is String) {
       setState(() => emailErrorMessage = result);
@@ -209,6 +213,7 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
+  void closeLoadingDialog() => Navigator.of(context).pop();
   void toLoginPage() => Navigator.of(context).pushReplacementNamed(LoginPage.routeName);
   void toHomePage() => Navigator.of(context).pushNamedAndRemoveUntil(
         HomePage.routeName,
