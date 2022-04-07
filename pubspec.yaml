@@ -45,6 +45,7 @@ dependencies:
   google_maps_flutter: ^2.1.8
   adaptive_theme: ^3.1.0
   geolocator: ^9.0.0
+  modal_bottom_sheet: ^2.1.0
 
 dev_dependencies:
   flutter_test:
