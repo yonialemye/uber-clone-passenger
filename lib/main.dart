@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       designSize: Values.desingSize,
       minTextAdapt: true,
       splitScreenMode: true,
-      child: const WelcomePage(),
+      child: const HomePage(),
       builder: (context, home) => AdaptiveTheme(
         light: Themes.light,
         dark: Themes.dark,

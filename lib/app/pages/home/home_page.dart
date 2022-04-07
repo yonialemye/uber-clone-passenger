@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:day_night_switcher/day_night_switcher.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
 import 'package:uber_clone_passenger/app/exports/widgets.dart';
@@ -21,9 +22,9 @@ class _HomePageState extends State<HomePage> {
   final Completer<GoogleMapController> _controller = Completer();
   GoogleMapController? _googleMapController;
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
+  final CameraPosition _piassaGondar = const CameraPosition(
+    target: LatLng(12.6039067, 37.4649089),
+    zoom: 17,
   );
 
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
@@ -31,12 +32,18 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController searchController = TextEditingController();
   double bottomPadding = 0;
   bool? isDarkMode;
+  Position? _currentPosition;
 
   @override
   void didChangeDependencies() {
     getSavedThemeMode();
-    isDarkMode == true ? darkStatusAndNavigationBar() : lightStatusAndNavigationBar();
     super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   getSavedThemeMode() async {
@@ -44,18 +51,41 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       if (savedThemeMode == AdaptiveThemeMode.dark) {
         isDarkMode = true;
-        _googleMapController!.setMapStyle(Values.googleMapStyle);
       } else {
         isDarkMode = false;
-        _googleMapController!.setMapStyle('''[]''');
       }
+      isDarkMode == true ? darkStatusAndNavigationBar() : lightStatusAndNavigationBar();
     });
   }
 
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
+  void getCurrentPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+    _currentPosition = await Geolocator.getCurrentPosition();
+
+    LatLng pos = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
+
+    CameraPosition cp = CameraPosition(target: pos, zoom: 17);
+    _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
   }
 
   @override
@@ -71,10 +101,10 @@ class _HomePageState extends State<HomePage> {
             setState(() => isDarkMode = value);
             if (value) {
               AdaptiveTheme.of(context).setDark();
-              _googleMapController!.setMapStyle(Values.googleMapStyle);
+              _googleMapController!.setMapStyle(Values.googleMapStyleDark);
             } else {
               AdaptiveTheme.of(context).setLight();
-              _googleMapController!.setMapStyle('''[]''');
+              _googleMapController!.setMapStyle(Values.googleMapStyleLight);
             }
           },
         ),
@@ -83,17 +113,24 @@ class _HomePageState extends State<HomePage> {
         children: [
           GoogleMap(
             mapType: MapType.normal,
-            initialCameraPosition: _kGooglePlex,
+            initialCameraPosition: _piassaGondar,
             buildingsEnabled: false,
             compassEnabled: true,
             myLocationEnabled: true,
             padding: EdgeInsets.only(bottom: bottomPadding),
             zoomControlsEnabled: false,
+            myLocationButtonEnabled: false,
+            mapToolbarEnabled: false,
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               _googleMapController = controller;
-              getSavedThemeMode();
+              if (isDarkMode!) {
+                _googleMapController!.setMapStyle(Values.googleMapStyleDark);
+              } else {
+                _googleMapController!.setMapStyle('''[]''');
+              }
               setState(() => bottomPadding = 365);
+              getCurrentPosition();
             },
           ),
           Positioned(
@@ -167,7 +204,13 @@ class _HomePageState extends State<HomePage> {
                         hintText: 'Hey',
                       ),
                       SizedBox(height: Values.height20),
-                      MyElevatedButton(child: const Text('Calculate distance'), onPressed: () {}),
+                      Hero(
+                        tag: ButtonsHero.elevated,
+                        child: MyElevatedButton(
+                          child: const Text('Calculate distance'),
+                          onPressed: () {},
+                        ),
+                      ),
                       SizedBox(height: Values.height20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
