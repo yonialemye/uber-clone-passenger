@@ -12,6 +12,7 @@ class MyTextField extends StatelessWidget {
     required this.prefixIcon,
     this.prefix,
     this.errorMessage,
+    this.readOnly,
   }) : super(key: key);
 
   final TextEditingController controller;
@@ -21,6 +22,7 @@ class MyTextField extends StatelessWidget {
   final IconData prefixIcon;
   final String? prefix;
   final String? errorMessage;
+  final bool? readOnly;
 
   String? textFieldValidator(value) {
     if (value == null || value.isEmpty) {
@@ -47,6 +49,7 @@ class MyTextField extends StatelessWidget {
       keyboardType: keyBoardType ?? TextInputType.text,
       obscureText: keyBoardType == TextInputType.visiblePassword ? true : false,
       validator: textFieldValidator,
+      readOnly: readOnly ?? false,
       decoration: InputDecoration(
         errorText: errorMessage,
         prefixIcon: Icon(prefixIcon),
