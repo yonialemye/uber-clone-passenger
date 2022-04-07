@@ -1,24 +1,23 @@
-import 'package:animated_theme_switcher/animated_theme_switcher.dart';
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'app/exports/constants.dart' show Values;
+import 'app/exports/constants.dart' show Themes, Values;
 import 'app/exports/helpers.dart' show routesManager;
-import 'app/exports/pages.dart' show HomePage;
+import 'app/exports/pages.dart';
 import 'app/exports/services.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseServices.initializeFirebase();
-  final themeServise = await ThemeServices.instance;
-  var initTheme = themeServise.initial;
-  runApp(MyApp(theme: initTheme));
+  final savedThemeMode = await AdaptiveTheme.getThemeMode();
+  runApp(MyApp(savedThemeMode: savedThemeMode));
 }
 
 class MyApp extends StatelessWidget {
-  final ThemeData theme;
+  const MyApp({Key? key, this.savedThemeMode}) : super(key: key);
 
-  const MyApp({Key? key, required this.theme}) : super(key: key);
+  final AdaptiveThemeMode? savedThemeMode;
 
   @override
   Widget build(BuildContext context) {
@@ -26,19 +25,22 @@ class MyApp extends StatelessWidget {
       designSize: Values.desingSize,
       minTextAdapt: true,
       splitScreenMode: true,
-      child: const HomePage(),
-      builder: (context, home) {
-        return ThemeProvider(
-          initTheme: theme,
-          builder: (_, theme) => MaterialApp(
+      child: const WelcomePage(),
+      builder: (context, home) => AdaptiveTheme(
+        light: Themes.light,
+        dark: Themes.dark,
+        initial: savedThemeMode ?? AdaptiveThemeMode.system,
+        builder: (theme, darkTheme) {
+          return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'Uber Passenger',
             theme: theme,
+            darkTheme: darkTheme,
             home: home,
             onGenerateRoute: routesManager,
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

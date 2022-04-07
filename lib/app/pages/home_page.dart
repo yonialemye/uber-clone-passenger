@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:day_night_switcher/day_night_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -23,18 +24,31 @@ class _HomePageState extends State<HomePage> {
     zoom: 14.4746,
   );
 
-  String? mapStyle;
-
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController searchController = TextEditingController();
   double bottomPadding = 0;
+  bool? isDarkMode;
 
   @override
   void didChangeDependencies() {
-    mapStyle =
-        Theme.of(context).primaryColor == Coloors.blueLight ? '''[]''' : Values.googleMapStyle;
+    c();
+    final isDarkMode = Theme.of(context).scaffoldBackgroundColor == Coloors.whiteBg;
+    isDarkMode ? lightStatusAndNavigationBar() : darkStatusAndNavigationBar();
     super.didChangeDependencies();
+  }
+
+  c() async {
+    final savedThemeMode = await AdaptiveTheme.getThemeMode();
+    setState(() {
+      if (savedThemeMode == AdaptiveThemeMode.dark) {
+        isDarkMode = true;
+        _googleMapController!.setMapStyle(Values.googleMapStyle);
+      } else {
+        isDarkMode = false;
+        _googleMapController!.setMapStyle('''[]''');
+      }
+    });
   }
 
   @override
@@ -47,41 +61,23 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      drawer: Drawer(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        child: ListView(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.2),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundColor: Theme.of(context).primaryColor,
-                        child: const CircleAvatar(
-                          radius: 22,
-                          backgroundColor: Colors.blue,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: DayNightSwitcher(
-                          isDarkModeEnabled: false,
-                          onStateChanged: (value) {},
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+      drawer: MyDrawer(
+        child: DayNightSwitcher(
+          dayBackgroundColor: Coloors.darkBg.withOpacity(0.3),
+          nightBackgroundColor: Coloors.darkBg,
+          isDarkModeEnabled: isDarkMode ?? false,
+          onStateChanged: (value) {
+            setState(() {
+              isDarkMode = value;
+            });
+            if (value) {
+              AdaptiveTheme.of(context).setDark();
+              _googleMapController!.setMapStyle(Values.googleMapStyle);
+            } else {
+              AdaptiveTheme.of(context).setLight();
+              _googleMapController!.setMapStyle('''[]''');
+            }
+          },
         ),
       ),
       body: Stack(
@@ -97,7 +93,7 @@ class _HomePageState extends State<HomePage> {
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               _googleMapController = controller;
-              _googleMapController!.setMapStyle(mapStyle);
+              c();
               setState(() => bottomPadding = 365);
             },
           ),
@@ -182,7 +178,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           IconButton(
                             onPressed: () {},
-                            icon: Icon(Icons.add),
+                            icon: const Icon(Icons.add),
                           ),
                         ],
                       ),
@@ -192,6 +188,7 @@ class _HomePageState extends State<HomePage> {
                         child: const ListTile(
                           title: Text('Home'),
                           subtitle: Text('Gondar Arada'),
+                          trailing: Icon(Icons.edit),
                         ),
                       ),
                       SizedBox(height: Values.height20),
@@ -207,4 +204,48 @@ class _HomePageState extends State<HomePage> {
   }
 
   openDrawer() => scaffoldKey.currentState!.openDrawer();
+}
+
+class MyDrawer extends StatelessWidget {
+  const MyDrawer({Key? key, required this.child}) : super(key: key);
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      child: ListView(
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.2),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CircleAvatar(
+                      radius: 25,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      child: const CircleAvatar(
+                        radius: 22,
+                        backgroundColor: Colors.blue,
+                      ),
+                    ),
+                    SizedBox(
+                      height: Values.height50,
+                      width: Values.height50,
+                      child: child,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
