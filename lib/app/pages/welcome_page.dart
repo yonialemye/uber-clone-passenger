@@ -19,12 +19,13 @@ class _WelcomePageState extends State<WelcomePage> {
   bool? isDarkMode;
 
   @override
-  void initState() {
-    c();
-    super.initState();
+  void didChangeDependencies() {
+    toggleThemeMode();
+    isDarkMode == true ? darkStatusAndNavigationBar() : lightStatusAndNavigationBar();
+    super.didChangeDependencies();
   }
 
-  c() async {
+  toggleThemeMode() async {
     final savedThemeMode = await AdaptiveTheme.getThemeMode();
     setState(() {
       if (savedThemeMode == AdaptiveThemeMode.dark) {
@@ -33,13 +34,6 @@ class _WelcomePageState extends State<WelcomePage> {
         isDarkMode = false;
       }
     });
-  }
-
-  @override
-  void didChangeDependencies() {
-    final isDarkMode = Theme.of(context).scaffoldBackgroundColor == Coloors.whiteBg;
-    isDarkMode ? lightStatusAndNavigationBar() : darkStatusAndNavigationBar();
-    super.didChangeDependencies();
   }
 
   @override

@@ -7,6 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
 import 'package:uber_clone_passenger/app/exports/widgets.dart';
 
+import 'widgets/my_drawer.dart';
+
 class HomePage extends StatefulWidget {
   static const String routeName = '/home-page';
   const HomePage({Key? key}) : super(key: key);
@@ -32,13 +34,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void didChangeDependencies() {
-    c();
-    final isDarkMode = Theme.of(context).scaffoldBackgroundColor == Coloors.whiteBg;
-    isDarkMode ? lightStatusAndNavigationBar() : darkStatusAndNavigationBar();
+    getSavedThemeMode();
+    isDarkMode == true ? darkStatusAndNavigationBar() : lightStatusAndNavigationBar();
     super.didChangeDependencies();
   }
 
-  c() async {
+  getSavedThemeMode() async {
     final savedThemeMode = await AdaptiveTheme.getThemeMode();
     setState(() {
       if (savedThemeMode == AdaptiveThemeMode.dark) {
@@ -67,9 +68,7 @@ class _HomePageState extends State<HomePage> {
           nightBackgroundColor: Coloors.darkBg,
           isDarkModeEnabled: isDarkMode ?? false,
           onStateChanged: (value) {
-            setState(() {
-              isDarkMode = value;
-            });
+            setState(() => isDarkMode = value);
             if (value) {
               AdaptiveTheme.of(context).setDark();
               _googleMapController!.setMapStyle(Values.googleMapStyle);
@@ -93,9 +92,25 @@ class _HomePageState extends State<HomePage> {
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               _googleMapController = controller;
-              c();
+              getSavedThemeMode();
               setState(() => bottomPadding = 365);
             },
+          ),
+          Positioned(
+            top: 50,
+            right: 0,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 10, right: 20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: IconButton(
+                onPressed: openDrawer,
+                color: Coloors.whiteBg,
+                icon: const Icon(Icons.menu),
+              ),
+            ),
           ),
           Positioned(
             bottom: 0,
@@ -104,21 +119,6 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 10, right: 20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: IconButton(
-                      onPressed: openDrawer,
-                      color: Coloors.whiteBg,
-                      icon: const Icon(Icons.menu),
-                    ),
-                  ),
-                ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(
@@ -183,8 +183,8 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                       Card(
-                        color: Coloors.blueDark.withOpacity(0.1),
-                        elevation: 0,
+                        elevation: 4,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         child: const ListTile(
                           title: Text('Home'),
                           subtitle: Text('Gondar Arada'),
@@ -204,48 +204,4 @@ class _HomePageState extends State<HomePage> {
   }
 
   openDrawer() => scaffoldKey.currentState!.openDrawer();
-}
-
-class MyDrawer extends StatelessWidget {
-  const MyDrawer({Key? key, required this.child}) : super(key: key);
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      child: ListView(
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.2),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Theme.of(context).primaryColor,
-                      child: const CircleAvatar(
-                        radius: 22,
-                        backgroundColor: Colors.blue,
-                      ),
-                    ),
-                    SizedBox(
-                      height: Values.height50,
-                      width: Values.height50,
-                      child: child,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
