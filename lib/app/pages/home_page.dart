@@ -25,6 +25,7 @@ class _HomePageState extends State<HomePage> {
   String? mapStyle;
 
   final TextEditingController searchController = TextEditingController();
+  double bottomPadding = 0;
 
   @override
   void didChangeDependencies() {
@@ -50,10 +51,15 @@ class _HomePageState extends State<HomePage> {
             buildingsEnabled: false,
             compassEnabled: true,
             myLocationEnabled: true,
+            padding: EdgeInsets.only(bottom: bottomPadding),
+            zoomControlsEnabled: false,
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               _googleMapController = controller;
               _googleMapController!.setMapStyle(mapStyle);
+              setState(() {
+                bottomPadding = 365;
+              });
             },
           ),
           Positioned(
