@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:day_night_switcher/day_night_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
@@ -24,6 +25,8 @@ class _HomePageState extends State<HomePage> {
 
   String? mapStyle;
 
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   final TextEditingController searchController = TextEditingController();
   double bottomPadding = 0;
 
@@ -43,6 +46,44 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
+      drawer: Drawer(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        child: ListView(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.2),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Theme.of(context).primaryColor,
+                        child: const CircleAvatar(
+                          radius: 22,
+                          backgroundColor: Colors.blue,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: DayNightSwitcher(
+                          isDarkModeEnabled: false,
+                          onStateChanged: (value) {},
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
       body: Stack(
         children: [
           GoogleMap(
@@ -57,9 +98,7 @@ class _HomePageState extends State<HomePage> {
               _controller.complete(controller);
               _googleMapController = controller;
               _googleMapController!.setMapStyle(mapStyle);
-              setState(() {
-                bottomPadding = 365;
-              });
+              setState(() => bottomPadding = 365);
             },
           ),
           Positioned(
@@ -78,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: openDrawer,
                       color: Coloors.whiteBg,
                       icon: const Icon(Icons.menu),
                     ),
@@ -166,4 +205,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  openDrawer() => scaffoldKey.currentState!.openDrawer();
 }
