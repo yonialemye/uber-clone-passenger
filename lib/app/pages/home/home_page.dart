@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:day_night_switcher/day_night_switcher.dart';
@@ -8,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
 import 'package:uber_clone_passenger/app/exports/widgets.dart';
 
+import '../../services/home_page_services.dart';
 import 'widgets/my_drawer.dart';
 
 class HomePage extends StatefulWidget {
@@ -86,6 +88,9 @@ class _HomePageState extends State<HomePage> {
 
     CameraPosition cp = CameraPosition(target: pos, zoom: 17);
     _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
+
+    String address = await HomePageServices.findCoordinateAddress(_currentPosition!);
+    searchController.text = address;
   }
 
   @override
@@ -121,7 +126,7 @@ class _HomePageState extends State<HomePage> {
             zoomControlsEnabled: false,
             myLocationButtonEnabled: false,
             mapToolbarEnabled: false,
-            onMapCreated: (GoogleMapController controller) {
+            onMapCreated: (GoogleMapController controller) async {
               _controller.complete(controller);
               _googleMapController = controller;
               if (isDarkMode!) {
@@ -131,21 +136,23 @@ class _HomePageState extends State<HomePage> {
               }
               setState(() => bottomPadding = 365);
               getCurrentPosition();
-
-              scaffoldKey.currentState!.showBottomSheet(
-                (context) {
-                  return SearchFieldBottomSheet(
-                    searchController: searchController,
-                  );
-                },
-                enableDrag: false,
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(Values.radius30),
+              await Future.delayed(Duration(seconds: 2));
+              if (mounted) {
+                scaffoldKey.currentState!.showBottomSheet(
+                  (context) {
+                    return SearchFieldBottomSheet(
+                      searchController: searchController,
+                    );
+                  },
+                  enableDrag: false,
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(Values.radius30),
+                    ),
                   ),
-                ),
-              );
+                );
+              }
             },
           ),
           Positioned(
@@ -164,98 +171,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          // Positioned(
-          //   bottom: 0,
-          //   left: 0,
-          //   right: 0,
-          //   child: Column(
-          //     crossAxisAlignment: CrossAxisAlignment.stretch,
-          //     children: [
-          //       Container(
-          //         padding: const EdgeInsets.symmetric(horizontal: 20),
-          //         decoration: BoxDecoration(
-          //           color: Theme.of(context).scaffoldBackgroundColor,
-          //           borderRadius: BorderRadius.vertical(
-          //             top: Radius.circular(Values.radius30),
-          //           ),
-          //         ),
-          //         child: Column(
-          //           crossAxisAlignment: CrossAxisAlignment.start,
-          //           children: [
-          //             SizedBox(height: Values.height10),
-          //             Align(
-          //               alignment: Alignment.topCenter,
-          //               child: Container(
-          //                 height: 5,
-          //                 width: 40,
-          //                 decoration: BoxDecoration(
-          //                   color: Theme.of(context).primaryColor,
-          //                   borderRadius: BorderRadius.circular(
-          //                     Values.radius30,
-          //                   ),
-          //                 ),
-          //               ),
-          //             ),
-          //             SizedBox(height: Values.height10),
-          //             MyText(
-          //               text: 'Welcome back!',
-          //               fontSize: 11,
-          //               fontFamily: 'Pop-Regular',
-          //               textColor: Theme.of(context).textTheme.bodyText2!.color,
-          //             ),
-          //             SizedBox(height: Values.height10),
-          //             MyText(
-          //               text: 'Where do you want to go?',
-          //               fontSize: 16,
-          //               textColor: Theme.of(context).textTheme.bodyText2!.color,
-          //             ),
-          //             SizedBox(height: Values.height20),
-          //             MyTextField(
-          //               controller: searchController,
-          //               labelText: 'Select location from map',
-          //               prefixIcon: Icons.location_on_outlined,
-          //               readOnly: true,
-          //               keyBoardType: TextInputType.text,
-          //               hintText: 'Hey',
-          //             ),
-          //             SizedBox(height: Values.height20),
-          //             Hero(
-          //               tag: ButtonsHero.elevated,
-          //               child: MyElevatedButton(
-          //                 child: const Text('Calculate distance'),
-          //                 onPressed: () {},
-          //               ),
-          //             ),
-          //             SizedBox(height: Values.height20),
-          //             Row(
-          //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //               children: [
-          //                 MyText(
-          //                   text: 'Favorite Places',
-          //                   textColor: Theme.of(context).textTheme.bodyText2!.color,
-          //                 ),
-          //                 IconButton(
-          //                   onPressed: () {},
-          //                   icon: const Icon(Icons.add),
-          //                 ),
-          //               ],
-          //             ),
-          //             Card(
-          //               elevation: 4,
-          //               color: Theme.of(context).scaffoldBackgroundColor,
-          //               child: const ListTile(
-          //                 title: Text('Home'),
-          //                 subtitle: Text('Gondar Arada'),
-          //                 trailing: Icon(Icons.edit),
-          //               ),
-          //             ),
-          //             SizedBox(height: Values.height20),
-          //           ],
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
         ],
       ),
     );

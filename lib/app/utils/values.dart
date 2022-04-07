@@ -18,6 +18,8 @@ class Values {
   static double font20 = 20.sp;
   static double font50 = 50.sp;
 
+  static String url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=';
+
   static const googleMapStyleLight = '''
 [  {
     "featureType": "administrative",
