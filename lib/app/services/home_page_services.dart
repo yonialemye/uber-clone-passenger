@@ -65,10 +65,6 @@ class HomePageServices {
         latitude: latitude,
         longitude: longitude,
       );
-
-      log("address name : $placeAddress");
-      log("address id : $placeId");
-
       return address;
     } catch (e) {
       log("Find Coordinate address: $e");

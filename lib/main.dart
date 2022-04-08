@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       builder: (context, home) => AdaptiveTheme(
         light: Themes.light,
         dark: Themes.dark,
-        initial: savedThemeMode ?? AdaptiveThemeMode.system,
+        initial: savedThemeMode ?? AdaptiveThemeMode.dark,
         builder: (theme, darkTheme) {
           return ChangeNotifierProvider(
             create: (context) => AddressProvider(),

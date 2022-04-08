@@ -40,10 +40,12 @@ class _HomePageState extends State<HomePage> {
 
   Set<Circle> circles = {};
 
-  @override
-  void didChangeDependencies() {
-    getSavedThemeMode();
-    super.didChangeDependencies();
+  animateCameraPosition({latitude, longitude}) {
+    LatLng pos = LatLng(latitude, longitude);
+    CameraPosition cp = CameraPosition(target: pos, zoom: 15);
+    _googleMapController!.animateCamera(
+      CameraUpdate.newCameraPosition(cp),
+    );
   }
 
   @override
@@ -52,26 +54,14 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  getSavedThemeMode() async {
-    final savedThemeMode = await AdaptiveTheme.getThemeMode();
-    setState(() {
-      if (savedThemeMode == AdaptiveThemeMode.dark) {
-        isDarkMode = true;
-      } else {
-        isDarkMode = false;
-      }
-      isDarkMode == true ? darkStatusAndNavigationBar() : lightStatusAndNavigationBar();
-    });
-  }
-
-  void getCurrentAddress() async {
+  Future<void> getPickUpAddress() async {
     final result = await HomePageServices.locationPermissionHandler();
     if (result != Operation.success) return;
-
     _currentPosition = await Geolocator.getCurrentPosition();
-    LatLng pos = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
-    CameraPosition cp = CameraPosition(target: pos, zoom: 15);
-    _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
+    animateCameraPosition(
+      latitude: _currentPosition!.latitude,
+      longitude: _currentPosition!.longitude,
+    );
     final address = await HomePageServices.findCoordinateAddress(
       latitude: _currentPosition!.latitude,
       longitude: _currentPosition!.longitude,
@@ -81,12 +71,60 @@ class _HomePageState extends State<HomePage> {
     if (mounted) Provider.of<AddressProvider>(context, listen: false).setPickUpAddress(address);
   }
 
-  onMapTap(LatLng position) async {
-    showLoadingDialog(
-      context: context,
-      barrierColor: Colors.black12,
-      text: 'Loading...',
+  void getDestinationAddress() {}
+
+  void getCurrentAddress() async {
+    final result = await HomePageServices.locationPermissionHandler();
+    if (result != Operation.success) return;
+    _currentPosition = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.bestForNavigation,
     );
+    animateCameraPosition(
+      latitude: _currentPosition!.latitude,
+      longitude: _currentPosition!.longitude,
+    );
+    final address = await HomePageServices.findCoordinateAddress(
+      latitude: _currentPosition!.latitude,
+      longitude: _currentPosition!.longitude,
+      context: context,
+      mounted: mounted,
+    );
+    if (mounted) Provider.of<AddressProvider>(context, listen: false).setPickUpAddress(address);
+  }
+
+  Future<void> onMapCreated(GoogleMapController controller) async {
+    showLoadingDialog(context: context, text: 'Loading...');
+    _controller.complete(controller);
+    _googleMapController = controller;
+    if (Theme.of(context).brightness == Brightness.dark) {
+      _googleMapController!.setMapStyle(Values.googleMapStyleDark);
+    } else {
+      _googleMapController!.setMapStyle(Values.googleMapStyleLight);
+    }
+    setState(() => bottomPadding = 365);
+    getCurrentAddress();
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) Navigator.of(context).pop();
+    if (mounted) {
+      scaffoldKey.currentState!.showBottomSheet(
+        (context) {
+          return SearchFieldBottomSheet(
+            searchController: searchController,
+          );
+        },
+        enableDrag: false,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(Values.radius30),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> onMapTap(LatLng position) async {
+    showLoadingDialog(context: context, barrierColor: Colors.black12, text: 'Loading...');
     final address = await HomePageServices.findCoordinateAddress(
       latitude: position.latitude,
       longitude: position.longitude,
@@ -94,10 +132,8 @@ class _HomePageState extends State<HomePage> {
       mounted: mounted,
     );
     if (!mounted) return;
-    CameraPosition cp = CameraPosition(target: position, zoom: 15);
-    _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
+    animateCameraPosition(latitude: position.latitude, longitude: position.longitude);
     Navigator.of(context).pop();
-
     Provider.of<AddressProvider>(context, listen: false).setDestinationAddress(address);
 
     searchController.text = Provider.of<AddressProvider>(
@@ -125,15 +161,18 @@ class _HomePageState extends State<HomePage> {
         child: DayNightSwitcher(
           dayBackgroundColor: Coloors.darkBg.withOpacity(0.3),
           nightBackgroundColor: Coloors.darkBg,
-          isDarkModeEnabled: isDarkMode ?? false,
+          isDarkModeEnabled:
+              isDarkMode ?? Theme.of(context).brightness == Brightness.dark ? true : false,
           onStateChanged: (value) {
             setState(() => isDarkMode = value);
             if (value) {
               AdaptiveTheme.of(context).setDark();
               _googleMapController!.setMapStyle(Values.googleMapStyleDark);
+              darkStatusAndNavigationBar();
             } else {
               AdaptiveTheme.of(context).setLight();
               _googleMapController!.setMapStyle(Values.googleMapStyleLight);
+              lightStatusAndNavigationBar();
             }
           },
         ),
@@ -151,49 +190,51 @@ class _HomePageState extends State<HomePage> {
             myLocationButtonEnabled: false,
             mapToolbarEnabled: false,
             circles: circles,
-            onMapCreated: (GoogleMapController controller) async {
-              _controller.complete(controller);
-              _googleMapController = controller;
-              if (isDarkMode!) {
-                _googleMapController!.setMapStyle(Values.googleMapStyleDark);
-              } else {
-                _googleMapController!.setMapStyle(Values.googleMapStyleLight);
-              }
-              setState(() => bottomPadding = 365);
-              getCurrentAddress();
-              await Future.delayed(const Duration(seconds: 2));
-              if (mounted) {
-                scaffoldKey.currentState!.showBottomSheet(
-                  (context) {
-                    return SearchFieldBottomSheet(
-                      searchController: searchController,
-                    );
-                  },
-                  enableDrag: false,
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(Values.radius30),
-                    ),
-                  ),
-                );
-              }
-            },
+            onMapCreated: onMapCreated,
             onTap: onMapTap,
           ),
           Positioned(
-            top: 50,
-            right: 0,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 10, right: 20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.circular(15),
+            top: Values.height50,
+            left: Values.width20,
+            child: Material(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(Values.radius15),
+              child: InkWell(
+                onTap: openDrawer,
+                splashColor: Colors.transparent,
+                borderRadius: BorderRadius.circular(Values.radius15),
+                child: Padding(
+                  padding: EdgeInsets.all(Values.height10),
+                  child: const Icon(
+                    Icons.segment,
+                    color: Coloors.whiteBg,
+                  ),
+                ),
               ),
-              child: IconButton(
-                onPressed: openDrawer,
-                color: Coloors.whiteBg,
-                icon: const Icon(Icons.menu),
+            ),
+          ),
+          Positioned(
+            bottom: 380,
+            right: Values.width20,
+            child: Material(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(Values.radius15),
+              child: InkWell(
+                onTap: () async {
+                  showLoadingDialog(context: context, text: 'Loading...');
+                  await getPickUpAddress();
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                },
+                splashFactory: NoSplash.splashFactory,
+                borderRadius: BorderRadius.circular(Values.radius15),
+                child: Padding(
+                  padding: EdgeInsets.all(Values.height10),
+                  child: const Icon(
+                    Icons.my_location_outlined,
+                    color: Coloors.whiteBg,
+                  ),
+                ),
               ),
             ),
           ),

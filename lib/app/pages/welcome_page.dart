@@ -19,24 +19,6 @@ class _WelcomePageState extends State<WelcomePage> {
   bool? isDarkMode;
 
   @override
-  void didChangeDependencies() {
-    toggleThemeMode();
-    isDarkMode == true ? darkStatusAndNavigationBar() : lightStatusAndNavigationBar();
-    super.didChangeDependencies();
-  }
-
-  toggleThemeMode() async {
-    final savedThemeMode = await AdaptiveTheme.getThemeMode();
-    setState(() {
-      if (savedThemeMode == AdaptiveThemeMode.dark) {
-        isDarkMode = true;
-      } else {
-        isDarkMode = false;
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -62,15 +44,18 @@ class _WelcomePageState extends State<WelcomePage> {
                           child: DayNightSwitcher(
                             dayBackgroundColor: Coloors.darkBg.withOpacity(0.3),
                             nightBackgroundColor: Coloors.darkBg,
-                            isDarkModeEnabled: isDarkMode ?? false,
+                            isDarkModeEnabled:
+                                isDarkMode ?? Theme.of(context).brightness == Brightness.dark
+                                    ? true
+                                    : false,
                             onStateChanged: (value) {
-                              setState(() {
-                                isDarkMode = value;
-                              });
+                              setState(() => isDarkMode = value);
                               if (value) {
                                 AdaptiveTheme.of(context).setDark();
+                                darkStatusAndNavigationBar();
                               } else {
                                 AdaptiveTheme.of(context).setLight();
+                                lightStatusAndNavigationBar();
                               }
                             },
                           ),

@@ -13,6 +13,7 @@ class Values {
   static double width20 = 20.w;
 
   static double radius30 = 30.r;
+  static double radius15 = 15.r;
 
   static double font15 = 15.sp;
   static double font20 = 20.sp;
