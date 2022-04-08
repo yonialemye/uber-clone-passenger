@@ -5,9 +5,11 @@ import 'package:day_night_switcher/day_night_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
 import 'package:uber_clone_passenger/app/exports/widgets.dart';
 
+import '../../providers/address_provider.dart';
 import '../../services/home_page_services.dart';
 import 'widgets/my_drawer.dart';
 
@@ -59,7 +61,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void getCurrentPosition() async {
+  void getCurrentAddress() async {
     final result = await HomePageServices.locationPermissionHandler();
     if (result != Operation.success) return;
 
@@ -67,12 +69,14 @@ class _HomePageState extends State<HomePage> {
     LatLng pos = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
     CameraPosition cp = CameraPosition(target: pos, zoom: 17);
     _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
-    String address = await HomePageServices.findCoordinateAddress(
+    await HomePageServices.findCoordinateAddress(
       position: _currentPosition!,
       context: context,
       mounted: mounted,
     );
-    searchController.text = address;
+    if (mounted) {
+      searchController.text = context.watch<AddressProvider>().pickUpAddress!.placeName;
+    }
   }
 
   @override
@@ -117,7 +121,7 @@ class _HomePageState extends State<HomePage> {
                 _googleMapController!.setMapStyle(Values.googleMapStyleLight);
               }
               setState(() => bottomPadding = 365);
-              getCurrentPosition();
+              getCurrentAddress();
               await Future.delayed(const Duration(seconds: 2));
               if (mounted) {
                 scaffoldKey.currentState!.showBottomSheet(

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
@@ -36,33 +38,40 @@ class HomePageServices {
     return Operation.success;
   }
 
-  static Future<String> findCoordinateAddress({
+  static Future<void> findCoordinateAddress({
     required Position position,
     required BuildContext context,
     required bool mounted,
   }) async {
-    String placeAddress = '';
-    String placeId = '';
-    final status = await checkConnection();
-    if (status == Operation.failed) {
-      Fluttertoast.showToast(msg: 'Make sure you have an internet connection');
-      return placeAddress;
-    }
-    String url = '${Values.url}${position.latitude},${position.longitude}&key=$mapApiKey';
-    var response = await HttpServices.getRequest(url);
-    if (response != Operation.failed) {
-      placeAddress = response['results'][0]['formatted_address'];
-      placeId = response['results'][0]['place_id'];
-    }
+    try {
+      String placeAddress = '';
+      String placeId = '';
+      final status = await checkConnection();
+      if (status == Operation.failed) {
+        Fluttertoast.showToast(msg: 'Make sure you have an internet connection');
+        return;
+      }
+      String url = '${Values.url}${position.latitude},${position.longitude}&key=$mapApiKey';
+      var response = await HttpServices.getRequest(url);
+      if (response != Operation.failed) {
+        placeAddress = response['results'][0]['formatted_address'];
+        placeId = response['results'][0]['place_id'];
+      }
 
-    Address address = Address(
-      placeName: placeAddress,
-      placeAddressId: placeId,
-      latitude: position.latitude,
-      longitude: position.longitude,
-    );
+      Address address = Address(
+        placeName: placeAddress,
+        placeId: placeId,
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
 
-    if (mounted) Provider.of<AddressProvider>(context, listen: false).updatePickUpAddress(address);
-    return placeAddress;
+      log("address name : $placeAddress");
+      log("address id : $placeId");
+
+      if (mounted) Provider.of<AddressProvider>(context, listen: false).setPickUpAddress(address);
+    } catch (e) {
+      log("Find Coordinate address: $e");
+      Fluttertoast.showToast(msg: 'Something happend, Please try again later!');
+    }
   }
 }
