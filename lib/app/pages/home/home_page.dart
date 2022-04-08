@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:day_night_switcher/day_night_switcher.dart';
@@ -61,35 +60,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   void getCurrentPosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+    final result = await HomePageServices.locationPermissionHandler();
+    if (result != Operation.success) return;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.',
-      );
-    }
     _currentPosition = await Geolocator.getCurrentPosition();
-
     LatLng pos = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
-
     CameraPosition cp = CameraPosition(target: pos, zoom: 17);
     _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
-
-    String address = await HomePageServices.findCoordinateAddress(_currentPosition!);
+    String address = await HomePageServices.findCoordinateAddress(
+      position: _currentPosition!,
+      context: context,
+      mounted: mounted,
+    );
     searchController.text = address;
   }
 
@@ -132,11 +114,11 @@ class _HomePageState extends State<HomePage> {
               if (isDarkMode!) {
                 _googleMapController!.setMapStyle(Values.googleMapStyleDark);
               } else {
-                _googleMapController!.setMapStyle('''[]''');
+                _googleMapController!.setMapStyle(Values.googleMapStyleLight);
               }
               setState(() => bottomPadding = 365);
               getCurrentPosition();
-              await Future.delayed(Duration(seconds: 2));
+              await Future.delayed(const Duration(seconds: 2));
               if (mounted) {
                 scaffoldKey.currentState!.showBottomSheet(
                   (context) {
