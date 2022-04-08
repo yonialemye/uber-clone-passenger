@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
+import 'package:uber_clone_passenger/app/exports/helpers.dart';
 import 'package:uber_clone_passenger/app/exports/widgets.dart';
 
 import '../../providers/address_provider.dart';
@@ -36,6 +37,8 @@ class _HomePageState extends State<HomePage> {
   double bottomPadding = 0;
   bool? isDarkMode;
   Position? _currentPosition;
+
+  Set<Circle> circles = {};
 
   @override
   void didChangeDependencies() {
@@ -67,16 +70,51 @@ class _HomePageState extends State<HomePage> {
 
     _currentPosition = await Geolocator.getCurrentPosition();
     LatLng pos = LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
-    CameraPosition cp = CameraPosition(target: pos, zoom: 17);
+    CameraPosition cp = CameraPosition(target: pos, zoom: 15);
     _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
-    await HomePageServices.findCoordinateAddress(
-      position: _currentPosition!,
+    final address = await HomePageServices.findCoordinateAddress(
+      latitude: _currentPosition!.latitude,
+      longitude: _currentPosition!.longitude,
       context: context,
       mounted: mounted,
     );
-    if (mounted) {
-      searchController.text = context.watch<AddressProvider>().pickUpAddress!.placeName;
-    }
+    if (mounted) Provider.of<AddressProvider>(context, listen: false).setPickUpAddress(address);
+  }
+
+  onMapTap(LatLng position) async {
+    showLoadingDialog(
+      context: context,
+      barrierColor: Colors.black12,
+      text: 'Loading...',
+    );
+    final address = await HomePageServices.findCoordinateAddress(
+      latitude: position.latitude,
+      longitude: position.longitude,
+      context: context,
+      mounted: mounted,
+    );
+    if (!mounted) return;
+    CameraPosition cp = CameraPosition(target: position, zoom: 15);
+    _googleMapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
+    Navigator.of(context).pop();
+
+    Provider.of<AddressProvider>(context, listen: false).setDestinationAddress(address);
+
+    searchController.text = Provider.of<AddressProvider>(
+      context,
+      listen: false,
+    ).destinationAddress!.placeName;
+
+    setState(() {
+      circles.add(Circle(
+        circleId: const CircleId('destId'),
+        center: position,
+        radius: 20,
+        strokeColor: Colors.red,
+        fillColor: Colors.red,
+        strokeWidth: 3,
+      ));
+    });
   }
 
   @override
@@ -112,6 +150,7 @@ class _HomePageState extends State<HomePage> {
             zoomControlsEnabled: false,
             myLocationButtonEnabled: false,
             mapToolbarEnabled: false,
+            circles: circles,
             onMapCreated: (GoogleMapController controller) async {
               _controller.complete(controller);
               _googleMapController = controller;
@@ -140,6 +179,7 @@ class _HomePageState extends State<HomePage> {
                 );
               }
             },
+            onTap: onMapTap,
           ),
           Positioned(
             top: 50,

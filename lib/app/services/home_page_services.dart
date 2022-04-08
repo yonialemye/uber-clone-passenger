@@ -38,8 +38,9 @@ class HomePageServices {
     return Operation.success;
   }
 
-  static Future<void> findCoordinateAddress({
-    required Position position,
+  static Future<dynamic> findCoordinateAddress({
+    required double latitude,
+    required double longitude,
     required BuildContext context,
     required bool mounted,
   }) async {
@@ -51,7 +52,7 @@ class HomePageServices {
         Fluttertoast.showToast(msg: 'Make sure you have an internet connection');
         return;
       }
-      String url = '${Values.url}${position.latitude},${position.longitude}&key=$mapApiKey';
+      String url = '${Values.url}$latitude,$longitude&key=$mapApiKey';
       var response = await HttpServices.getRequest(url);
       if (response != Operation.failed) {
         placeAddress = response['results'][0]['formatted_address'];
@@ -61,14 +62,14 @@ class HomePageServices {
       Address address = Address(
         placeName: placeAddress,
         placeId: placeId,
-        latitude: position.latitude,
-        longitude: position.longitude,
+        latitude: latitude,
+        longitude: longitude,
       );
 
       log("address name : $placeAddress");
       log("address id : $placeId");
 
-      if (mounted) Provider.of<AddressProvider>(context, listen: false).setPickUpAddress(address);
+      return address;
     } catch (e) {
       log("Find Coordinate address: $e");
       Fluttertoast.showToast(msg: 'Something happend, Please try again later!');

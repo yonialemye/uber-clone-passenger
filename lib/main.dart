@@ -1,6 +1,8 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
+import 'package:uber_clone_passenger/app/providers/address_provider.dart';
 
 import 'app/exports/constants.dart' show Themes, Values;
 import 'app/exports/helpers.dart' show routesManager;
@@ -31,13 +33,16 @@ class MyApp extends StatelessWidget {
         dark: Themes.dark,
         initial: savedThemeMode ?? AdaptiveThemeMode.system,
         builder: (theme, darkTheme) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Uber Passenger',
-            theme: theme,
-            darkTheme: darkTheme,
-            home: home,
-            onGenerateRoute: routesManager,
+          return ChangeNotifierProvider(
+            create: (context) => AddressProvider(),
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'Uber Passenger',
+              theme: theme,
+              darkTheme: darkTheme,
+              home: home,
+              onGenerateRoute: routesManager,
+            ),
           );
         },
       ),
