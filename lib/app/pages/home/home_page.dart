@@ -38,6 +38,7 @@ class _HomePageState extends State<HomePage> {
   Position? _currentPosition;
 
   Set<Circle> circles = {};
+  Set<Marker> markers = {};
 
   List<LatLng> polyLineCoordinates = [];
   Set<Polyline> polyLines = {};
@@ -170,13 +171,8 @@ class _HomePageState extends State<HomePage> {
       endCap: Cap.roundCap,
       geodesic: true,
     );
-
-    setState(() {
-      polyLines.add(polyline);
-    });
-
+    polyLines.add(polyline);
     LatLngBounds bounds;
-
     if (startPos.latitude > endPos.latitude && startPos.longitude > endPos.longitude) {
       log('1');
       bounds = LatLngBounds(southwest: endPos, northeast: startPos);
@@ -197,13 +193,29 @@ class _HomePageState extends State<HomePage> {
       bounds = LatLngBounds(southwest: startPos, northeast: endPos);
     }
     _googleMapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+
+    Marker startMarker = Marker(
+      markerId: const MarkerId('start'),
+      position: startPos,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      infoWindow: InfoWindow(title: 'Pickup Address', snippet: pickUp.placeName),
+    );
+
+    Marker endMarker = Marker(
+      markerId: const MarkerId('end'),
+      position: endPos,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      infoWindow: InfoWindow(title: 'Destination Address', snippet: pickUp.placeName),
+    );
+
+    markers.addAll({startMarker, endMarker});
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor.withOpacity(0.85),
         elevation: 0,
@@ -234,6 +246,7 @@ class _HomePageState extends State<HomePage> {
             myLocationButtonEnabled: false,
             mapToolbarEnabled: false,
             circles: circles,
+            markers: markers,
             polylines: polyLines,
             onMapCreated: onMapCreated,
             onTap: setDestinationAddress,
