@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:day_night_switcher/day_night_switcher.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -11,7 +12,6 @@ import 'package:provider/provider.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
 import 'package:uber_clone_passenger/app/exports/helpers.dart';
 import 'package:uber_clone_passenger/app/exports/services.dart';
-import 'package:uber_clone_passenger/app/exports/widgets.dart';
 import 'package:uber_clone_passenger/app/models/address_model.dart';
 
 import '../../providers/address_provider.dart';
@@ -39,6 +39,9 @@ class _HomePageState extends State<HomePage> {
 
   Set<Circle> circles = {};
 
+  List<LatLng> polyLineCoordinates = [];
+  Set<Polyline> polyLines = {};
+
   @override
   void dispose() {
     searchController.dispose();
@@ -63,6 +66,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> setDestinationAddress(LatLng position) async {
+    polyLineCoordinates.clear();
+    polyLines.clear();
     showLoadingDialog(context: context, barrierColor: Colors.black12, text: 'Loading...');
     LatLng pos = LatLng(position.latitude, position.longitude);
     _googleMapController!.animateCamera(
@@ -104,7 +109,6 @@ class _HomePageState extends State<HomePage> {
     final result = await HomePageServices.locationPermissionHandler();
     if (result != Operation.success) return;
     await setPickUpAddress();
-    await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
     Navigator.of(context).pop();
     scaffoldKey.currentState!.showBottomSheet(
@@ -145,6 +149,31 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).pop();
     if (rideDetails == Operation.failed) return;
     log(rideDetails!.durationText);
+
+    PolylinePoints polylinePoints = PolylinePoints();
+    List<PointLatLng> results = polylinePoints.decodePolyline(rideDetails.encodedPoints);
+
+    if (results.isEmpty) return;
+
+    polyLineCoordinates.clear();
+    for (var element in results) {
+      polyLineCoordinates.add(LatLng(element.latitude, element.longitude));
+    }
+    polyLines.clear();
+    Polyline polyline = Polyline(
+      polylineId: const PolylineId('polyid'),
+      color: Colors.orange,
+      points: polyLineCoordinates,
+      jointType: JointType.round,
+      width: 4,
+      startCap: Cap.roundCap,
+      endCap: Cap.roundCap,
+      geodesic: true,
+    );
+
+    setState(() {
+      polyLines.add(polyline);
+    });
   }
 
   @override
@@ -182,6 +211,7 @@ class _HomePageState extends State<HomePage> {
             myLocationButtonEnabled: false,
             mapToolbarEnabled: false,
             circles: circles,
+            polylines: polyLines,
             onMapCreated: onMapCreated,
             onTap: setDestinationAddress,
           ),
