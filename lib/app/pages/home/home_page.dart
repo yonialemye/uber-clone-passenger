@@ -174,6 +174,29 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       polyLines.add(polyline);
     });
+
+    LatLngBounds bounds;
+
+    if (startPos.latitude > endPos.latitude && startPos.longitude > endPos.longitude) {
+      log('1');
+      bounds = LatLngBounds(southwest: endPos, northeast: startPos);
+    } else if (startPos.longitude > endPos.longitude) {
+      log('2');
+      bounds = LatLngBounds(
+        southwest: LatLng(startPos.latitude, endPos.longitude),
+        northeast: LatLng(endPos.latitude, startPos.longitude),
+      );
+    } else if (startPos.latitude > endPos.latitude) {
+      log('3');
+      bounds = LatLngBounds(
+        southwest: LatLng(endPos.latitude, startPos.longitude),
+        northeast: LatLng(startPos.latitude, endPos.longitude),
+      );
+    } else {
+      log('4');
+      bounds = LatLngBounds(southwest: startPos, northeast: endPos);
+    }
+    _googleMapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
   }
 
   @override
