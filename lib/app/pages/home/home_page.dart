@@ -6,6 +6,7 @@ import 'package:day_night_switcher/day_night_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -140,76 +141,85 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> getRideDetails() async {
-    final pickUp = Provider.of<AddressProvider>(context, listen: false).pickUpAddress;
-    final destination = Provider.of<AddressProvider>(context, listen: false).destinationAddress;
-    final startPos = LatLng(pickUp!.latitude, pickUp.longitude);
-    final endPos = LatLng(destination!.latitude, destination.longitude);
-    showLoadingDialog(context: context, text: 'Loading...');
-    final rideDetails = await HomePageServices.getRideDetails(startPos: startPos, endPos: endPos);
-    if (!mounted) return;
-    Navigator.of(context).pop();
-    if (rideDetails == Operation.failed) return;
-    log(rideDetails!.durationText);
+    try {
+      final pickUp = Provider.of<AddressProvider>(context, listen: false).pickUpAddress;
+      final destination = Provider.of<AddressProvider>(context, listen: false).destinationAddress;
+      final startPos = LatLng(pickUp!.latitude, pickUp.longitude);
+      final endPos = LatLng(destination!.latitude, destination.longitude);
+      showLoadingDialog(context: context, text: 'Loading...');
+      final rideDetails = await HomePageServices.getRideDetails(startPos: startPos, endPos: endPos);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      if (rideDetails == Operation.failed) return;
+      log(rideDetails!.durationText);
 
-    PolylinePoints polylinePoints = PolylinePoints();
-    List<PointLatLng> results = polylinePoints.decodePolyline(rideDetails.encodedPoints);
+      PolylinePoints polylinePoints = PolylinePoints();
+      List<PointLatLng> results = polylinePoints.decodePolyline(rideDetails.encodedPoints);
 
-    if (results.isEmpty) return;
+      if (results.isEmpty) return;
 
-    polyLineCoordinates.clear();
-    for (var element in results) {
-      polyLineCoordinates.add(LatLng(element.latitude, element.longitude));
-    }
-    polyLines.clear();
-    Polyline polyline = Polyline(
-      polylineId: const PolylineId('polyid'),
-      color: Colors.orange,
-      points: polyLineCoordinates,
-      jointType: JointType.round,
-      width: 4,
-      startCap: Cap.roundCap,
-      endCap: Cap.roundCap,
-      geodesic: true,
-    );
-    polyLines.add(polyline);
-    LatLngBounds bounds;
-    if (startPos.latitude > endPos.latitude && startPos.longitude > endPos.longitude) {
-      log('1');
-      bounds = LatLngBounds(southwest: endPos, northeast: startPos);
-    } else if (startPos.longitude > endPos.longitude) {
-      log('2');
-      bounds = LatLngBounds(
-        southwest: LatLng(startPos.latitude, endPos.longitude),
-        northeast: LatLng(endPos.latitude, startPos.longitude),
+      polyLineCoordinates.clear();
+      for (var element in results) {
+        polyLineCoordinates.add(LatLng(element.latitude, element.longitude));
+      }
+      polyLines.clear();
+      Polyline polyline = Polyline(
+        polylineId: const PolylineId('polyid'),
+        color: Colors.orange,
+        points: polyLineCoordinates,
+        jointType: JointType.round,
+        width: 4,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+        geodesic: true,
       );
-    } else if (startPos.latitude > endPos.latitude) {
-      log('3');
-      bounds = LatLngBounds(
-        southwest: LatLng(endPos.latitude, startPos.longitude),
-        northeast: LatLng(startPos.latitude, endPos.longitude),
+      polyLines.add(polyline);
+      LatLngBounds bounds;
+      if (startPos.latitude > endPos.latitude && startPos.longitude > endPos.longitude) {
+        log('1');
+        bounds = LatLngBounds(southwest: endPos, northeast: startPos);
+      } else if (startPos.longitude > endPos.longitude) {
+        log('2');
+        bounds = LatLngBounds(
+          southwest: LatLng(startPos.latitude, endPos.longitude),
+          northeast: LatLng(endPos.latitude, startPos.longitude),
+        );
+      } else if (startPos.latitude > endPos.latitude) {
+        log('3');
+        bounds = LatLngBounds(
+          southwest: LatLng(endPos.latitude, startPos.longitude),
+          northeast: LatLng(startPos.latitude, endPos.longitude),
+        );
+      } else {
+        log('4');
+        bounds = LatLngBounds(southwest: startPos, northeast: endPos);
+      }
+      _googleMapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+
+      Marker startMarker = Marker(
+        markerId: const MarkerId('start'),
+        position: startPos,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow: InfoWindow(title: 'Pickup Address', snippet: pickUp.placeName),
       );
-    } else {
-      log('4');
-      bounds = LatLngBounds(southwest: startPos, northeast: endPos);
+
+      Marker endMarker = Marker(
+        markerId: const MarkerId('end'),
+        position: endPos,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        infoWindow: InfoWindow(title: 'Destination Address', snippet: pickUp.placeName),
+      );
+
+      markers.addAll({startMarker, endMarker});
+      setState(() {});
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'Please select destination first.',
+        backgroundColor: Colors.orangeAccent,
+        textColor: Colors.black,
+      );
+      log(e.toString());
     }
-    _googleMapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
-
-    Marker startMarker = Marker(
-      markerId: const MarkerId('start'),
-      position: startPos,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-      infoWindow: InfoWindow(title: 'Pickup Address', snippet: pickUp.placeName),
-    );
-
-    Marker endMarker = Marker(
-      markerId: const MarkerId('end'),
-      position: endPos,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-      infoWindow: InfoWindow(title: 'Destination Address', snippet: pickUp.placeName),
-    );
-
-    markers.addAll({startMarker, endMarker});
-    setState(() {});
   }
 
   @override
