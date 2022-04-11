@@ -13,12 +13,14 @@ import 'package:provider/provider.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
 import 'package:uber_clone_passenger/app/exports/helpers.dart';
 import 'package:uber_clone_passenger/app/exports/services.dart';
+import 'package:uber_clone_passenger/app/exports/widgets.dart';
 import 'package:uber_clone_passenger/app/models/address_model.dart';
+import 'package:uber_clone_passenger/app/models/ride_details_model.dart';
+import 'package:uber_clone_passenger/app/pages/home/widgets/search_field_bottom_sheet.dart';
 
 import '../../providers/address_provider.dart';
 import '../../services/home_page_services.dart';
 import 'widgets/my_drawer.dart';
-import 'widgets/search_field_bottom_sheet.dart';
 
 class HomePage extends StatefulWidget {
   static const String routeName = '/home-page';
@@ -70,6 +72,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> setDestinationAddress(LatLng position) async {
     polyLineCoordinates.clear();
     polyLines.clear();
+    markers.clear();
     showLoadingDialog(context: context, barrierColor: Colors.black12, text: 'Loading...');
     LatLng pos = LatLng(position.latitude, position.longitude);
     _googleMapController!.animateCamera(
@@ -176,22 +179,18 @@ class _HomePageState extends State<HomePage> {
       polyLines.add(polyline);
       LatLngBounds bounds;
       if (startPos.latitude > endPos.latitude && startPos.longitude > endPos.longitude) {
-        log('1');
         bounds = LatLngBounds(southwest: endPos, northeast: startPos);
       } else if (startPos.longitude > endPos.longitude) {
-        log('2');
         bounds = LatLngBounds(
           southwest: LatLng(startPos.latitude, endPos.longitude),
           northeast: LatLng(endPos.latitude, startPos.longitude),
         );
       } else if (startPos.latitude > endPos.latitude) {
-        log('3');
         bounds = LatLngBounds(
           southwest: LatLng(endPos.latitude, startPos.longitude),
           northeast: LatLng(startPos.latitude, endPos.longitude),
         );
       } else {
-        log('4');
         bounds = LatLngBounds(southwest: startPos, northeast: endPos);
       }
       _googleMapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
@@ -212,6 +211,144 @@ class _HomePageState extends State<HomePage> {
 
       markers.addAll({startMarker, endMarker});
       setState(() {});
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        barrierColor: Colors.transparent,
+        isDismissible: false,
+        enableDrag: false,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(Values.radius30),
+          ),
+        ),
+        builder: (context) {
+          return Container(
+            height: 385.h,
+            padding: EdgeInsets.symmetric(
+              horizontal: Values.width20,
+              vertical: Values.height10,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(Values.radius30),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const MyText(
+                      text: 'Select your taxi',
+                      fontSize: 18,
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          polyLineCoordinates.clear();
+                          markers.clear();
+                          polyLines.clear();
+                          circles.clear();
+                        });
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: Values.height10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              const MyText(
+                                text: 'Distance: ',
+                                textColor: Colors.grey,
+                                fontSize: 12,
+                              ),
+                              MyText(
+                                text: rideDetails!.distanceText,
+                                textColor: Theme.of(context).textTheme.bodyText2!.color,
+                                fontSize: 16,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: Values.height10),
+                          Row(
+                            children: [
+                              const MyText(
+                                text: 'Price: ',
+                                textColor: Colors.grey,
+                                fontSize: 12,
+                              ),
+                              MyText(
+                                text: '${HomePageServices.estimateFares(rideDetails)} Birr',
+                                textColor: Theme.of(context).textTheme.bodyText2!.color,
+                                fontSize: 16,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: Values.height10),
+                          Row(
+                            children: [
+                              const MyText(
+                                text: 'Approximate time: ',
+                                textColor: Colors.grey,
+                                fontSize: 12,
+                              ),
+                              MyText(
+                                text: rideDetails.durationText,
+                                textColor: Theme.of(context).textTheme.bodyText2!.color,
+                                fontSize: 16,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: Values.height10),
+                          Row(
+                            children: [
+                              const MyText(
+                                text: 'Payment type: ',
+                                textColor: Colors.grey,
+                                fontSize: 12,
+                              ),
+                              MyText(
+                                text: 'Cash',
+                                textColor: Theme.of(context).textTheme.bodyText2!.color,
+                                fontSize: 16,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Image.network(
+                      'https://content.jdmagicbox.com/quickquotes/images_main/tvs-three-wheelers-15-01-2021-021-220038788-p7594.png',
+                      height: 150,
+                      width: 120,
+                    ),
+                  ],
+                ),
+                MyElevatedButton(
+                  child: const MyText(
+                    text: 'Request a Ride',
+                    textColor: Coloors.whiteBg,
+                  ),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          );
+        },
+      );
     } catch (e) {
       Fluttertoast.showToast(
         msg: 'Please select destination first.',

@@ -93,4 +93,12 @@ class HomePageServices {
       return Operation.failed;
     }
   }
+
+  static int estimateFares(RideDetailsModel details) {
+    double baseFares = 10;
+    double distanceFare = (details.distanceValue / 1000) * 10;
+    double timeFare = (details.durationValue / 60) * 1.5;
+    double totalFare = baseFares + distanceFare + timeFare;
+    return totalFare.truncate();
+  }
 }

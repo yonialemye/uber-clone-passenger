@@ -17,7 +17,7 @@ class MyText extends StatelessWidget {
       text,
       style: TextStyle(
         fontSize: fontSize ?? Values.font15,
-        color: textColor ?? Coloors.whiteBg,
+        color: textColor ?? Theme.of(context).textTheme.bodyText2!.color,
         letterSpacing: 1,
         fontFamily: fontFamily ?? 'Bolt-Bold',
       ),
