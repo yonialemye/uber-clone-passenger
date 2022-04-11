@@ -1,12 +1,11 @@
 import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:provider/provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uber_clone_passenger/app/exports/constants.dart';
 import 'package:uber_clone_passenger/app/exports/helpers.dart';
-import 'package:uber_clone_passenger/app/providers/address_provider.dart';
+import 'package:uber_clone_passenger/app/models/ride_details_model.dart';
 
 import '../models/address_model.dart';
 import '../utils/api_keys.dart';
@@ -69,6 +68,29 @@ class HomePageServices {
     } catch (e) {
       log("Find Coordinate address: $e");
       Fluttertoast.showToast(msg: 'Something happend, Please try again later!');
+    }
+  }
+
+  static Future<dynamic> getRideDetails({
+    required LatLng startPos,
+    required LatLng endPos,
+  }) async {
+    try {
+      String url =
+          'https://maps.googleapis.com/maps/api/directions/json?origin=${startPos.latitude},${startPos.longitude}&destination=${endPos.latitude},${endPos.longitude}&mode=driving&key=$mapApiKey';
+      final response = await HttpServices.getRequest(url);
+      if (response == 'failed') return null;
+      RideDetailsModel rideDetails = RideDetailsModel(
+        distanceText: response['routes'][0]['legs'][0]['distance']['text'],
+        durationText: response['routes'][0]['legs'][0]['duration']['text'],
+        durationValue: response['routes'][0]['legs'][0]['duration']['value'],
+        distanceValue: response['routes'][0]['legs'][0]['distance']['value'],
+        encodedPoints: response['routes'][0]['overview_polyline']['points'],
+      );
+      return rideDetails;
+    } catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
+      return Operation.failed;
     }
   }
 }

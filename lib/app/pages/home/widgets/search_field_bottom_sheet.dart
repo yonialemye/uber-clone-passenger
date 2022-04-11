@@ -4,9 +4,14 @@ import '../../../exports/constants.dart';
 import '../../../exports/widgets.dart';
 
 class SearchFieldBottomSheet extends StatelessWidget {
-  const SearchFieldBottomSheet({Key? key, required this.searchController}) : super(key: key);
+  const SearchFieldBottomSheet({
+    Key? key,
+    required this.searchController,
+    required this.rideDetailCallBack,
+  }) : super(key: key);
 
   final TextEditingController searchController;
+  final VoidCallback rideDetailCallBack;
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +68,8 @@ class SearchFieldBottomSheet extends StatelessWidget {
           Hero(
             tag: ButtonsHero.elevated,
             child: MyElevatedButton(
+              onPressed: rideDetailCallBack,
               child: const Text('Calculate distance'),
-              onPressed: () {},
             ),
           ),
           SizedBox(height: Values.height20),

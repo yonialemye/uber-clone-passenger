@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:day_night_switcher/day_night_switcher.dart';
@@ -107,7 +108,10 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     Navigator.of(context).pop();
     scaffoldKey.currentState!.showBottomSheet(
-      (context) => SearchFieldBottomSheet(searchController: searchController),
+      (context) => SearchFieldBottomSheet(
+        searchController: searchController,
+        rideDetailCallBack: getRideDetails,
+      ),
       enableDrag: false,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: RoundedRectangleBorder(
@@ -128,6 +132,19 @@ class _HomePageState extends State<HomePage> {
       _googleMapController!.setMapStyle(Values.googleMapStyleLight);
       lightStatusAndNavigationBar();
     }
+  }
+
+  Future<void> getRideDetails() async {
+    final pickUp = Provider.of<AddressProvider>(context, listen: false).pickUpAddress;
+    final destination = Provider.of<AddressProvider>(context, listen: false).destinationAddress;
+    final startPos = LatLng(pickUp!.latitude, pickUp.longitude);
+    final endPos = LatLng(destination!.latitude, destination.longitude);
+    showLoadingDialog(context: context, text: 'Loading...');
+    final rideDetails = await HomePageServices.getRideDetails(startPos: startPos, endPos: endPos);
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    if (rideDetails == Operation.failed) return;
+    log(rideDetails!.durationText);
   }
 
   @override
@@ -169,7 +186,7 @@ class _HomePageState extends State<HomePage> {
             onTap: setDestinationAddress,
           ),
           Positioned(
-            bottom: 375.h,
+            bottom: 390.h,
             right: Values.width20,
             child: Material(
               color: Theme.of(context).primaryColor,
