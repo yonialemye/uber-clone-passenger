@@ -105,7 +105,7 @@ class _HomePageState extends State<HomePage> {
     showLoadingDialog(context: context, text: 'Loading...');
     _controller.complete(controller);
     _googleMapController = controller;
-    bottomPadding = 365;
+    bottomPadding = 360.h;
     if (Theme.of(context).brightness == Brightness.dark) {
       _googleMapController!.setMapStyle(Values.googleMapStyleDark);
     } else {
@@ -144,6 +144,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> getRideDetails() async {
+    if (searchController.text.isEmpty) {
+      Fluttertoast.showToast(msg: 'Please select a destination address');
+      return;
+    }
     try {
       final pickUp = Provider.of<AddressProvider>(context, listen: false).pickUpAddress;
       final destination = Provider.of<AddressProvider>(context, listen: false).destinationAddress;
@@ -214,7 +218,7 @@ class _HomePageState extends State<HomePage> {
       showModalBottomSheet(
         context: context,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        barrierColor: Colors.transparent,
+        barrierColor: Colors.black26,
         isDismissible: false,
         enableDrag: false,
         shape: RoundedRectangleBorder(
@@ -222,132 +226,19 @@ class _HomePageState extends State<HomePage> {
             top: Radius.circular(Values.radius30),
           ),
         ),
-        builder: (context) {
-          return Container(
-            height: 385.h,
-            padding: EdgeInsets.symmetric(
-              horizontal: Values.width20,
-              vertical: Values.height10,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(Values.radius30),
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const MyText(
-                      text: 'Select your taxi',
-                      fontSize: 18,
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          polyLineCoordinates.clear();
-                          markers.clear();
-                          polyLines.clear();
-                          circles.clear();
-                        });
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: Values.height10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              const MyText(
-                                text: 'Distance: ',
-                                textColor: Colors.grey,
-                                fontSize: 12,
-                              ),
-                              MyText(
-                                text: rideDetails!.distanceText,
-                                textColor: Theme.of(context).textTheme.bodyText2!.color,
-                                fontSize: 16,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: Values.height10),
-                          Row(
-                            children: [
-                              const MyText(
-                                text: 'Price: ',
-                                textColor: Colors.grey,
-                                fontSize: 12,
-                              ),
-                              MyText(
-                                text: '${HomePageServices.estimateFares(rideDetails)} Birr',
-                                textColor: Theme.of(context).textTheme.bodyText2!.color,
-                                fontSize: 16,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: Values.height10),
-                          Row(
-                            children: [
-                              const MyText(
-                                text: 'Approximate time: ',
-                                textColor: Colors.grey,
-                                fontSize: 12,
-                              ),
-                              MyText(
-                                text: rideDetails.durationText,
-                                textColor: Theme.of(context).textTheme.bodyText2!.color,
-                                fontSize: 16,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: Values.height10),
-                          Row(
-                            children: [
-                              const MyText(
-                                text: 'Payment type: ',
-                                textColor: Colors.grey,
-                                fontSize: 12,
-                              ),
-                              MyText(
-                                text: 'Cash',
-                                textColor: Theme.of(context).textTheme.bodyText2!.color,
-                                fontSize: 16,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Image.network(
-                      'https://content.jdmagicbox.com/quickquotes/images_main/tvs-three-wheelers-15-01-2021-021-220038788-p7594.png',
-                      height: 150,
-                      width: 120,
-                    ),
-                  ],
-                ),
-                MyElevatedButton(
-                  child: const MyText(
-                    text: 'Request a Ride',
-                    textColor: Coloors.whiteBg,
-                  ),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          );
-        },
+        builder: (context) => RideDetailsBottomSheet(
+          onCloseButtonPressed: () {
+            setState(() {
+              polyLineCoordinates.clear();
+              markers.clear();
+              polyLines.clear();
+              circles.clear();
+              searchController.text = '';
+            });
+            Navigator.of(context).pop();
+          },
+          rideDetails: rideDetails,
+        ),
       );
     } catch (e) {
       Fluttertoast.showToast(
@@ -399,7 +290,7 @@ class _HomePageState extends State<HomePage> {
             onTap: setDestinationAddress,
           ),
           Positioned(
-            bottom: 390.h,
+            bottom: 365.h,
             right: Values.width20,
             child: Material(
               color: Theme.of(context).primaryColor,
@@ -431,4 +322,134 @@ class _HomePageState extends State<HomePage> {
   }
 
   openDrawer() => scaffoldKey.currentState!.openDrawer();
+}
+
+class RideDetailsBottomSheet extends StatelessWidget {
+  final VoidCallback onCloseButtonPressed;
+  final RideDetailsModel rideDetails;
+  const RideDetailsBottomSheet({
+    Key? key,
+    required this.onCloseButtonPressed,
+    required this.rideDetails,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 385.h,
+      padding: EdgeInsets.symmetric(
+        horizontal: Values.width20,
+        vertical: Values.height10,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(Values.radius30),
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const MyText(
+                text: 'Select your taxi',
+                fontSize: 18,
+              ),
+              IconButton(
+                onPressed: onCloseButtonPressed,
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: Values.height10),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const MyText(
+                          text: 'Distance: ',
+                          textColor: Colors.grey,
+                          fontSize: 12,
+                        ),
+                        MyText(
+                          text: rideDetails.distanceText,
+                          textColor: Theme.of(context).textTheme.bodyText2!.color,
+                          fontSize: 16,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: Values.height10),
+                    Row(
+                      children: [
+                        const MyText(
+                          text: 'Price: ',
+                          textColor: Colors.grey,
+                          fontSize: 12,
+                        ),
+                        MyText(
+                          text: '${HomePageServices.estimateFares(rideDetails)} Birr',
+                          textColor: Theme.of(context).textTheme.bodyText2!.color,
+                          fontSize: 16,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: Values.height10),
+                    Row(
+                      children: [
+                        const MyText(
+                          text: 'Approximate time: ',
+                          textColor: Colors.grey,
+                          fontSize: 12,
+                        ),
+                        MyText(
+                          text: rideDetails.durationText,
+                          textColor: Theme.of(context).textTheme.bodyText2!.color,
+                          fontSize: 16,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: Values.height10),
+                    Row(
+                      children: [
+                        const MyText(
+                          text: 'Payment type: ',
+                          textColor: Colors.grey,
+                          fontSize: 12,
+                        ),
+                        MyText(
+                          text: 'Cash',
+                          textColor: Theme.of(context).textTheme.bodyText2!.color,
+                          fontSize: 16,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Image.network(
+                'https://content.jdmagicbox.com/quickquotes/images_main/tvs-three-wheelers-15-01-2021-021-220038788-p7594.png',
+                height: 150,
+                width: 120,
+              ),
+            ],
+          ),
+          MyElevatedButton(
+            child: const MyText(
+              text: 'Request a Ride',
+              textColor: Coloors.whiteBg,
+            ),
+            onPressed: () {},
+          ),
+        ],
+      ),
+    );
+  }
 }

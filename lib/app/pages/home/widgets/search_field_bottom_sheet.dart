@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../exports/constants.dart';
 import '../../../exports/widgets.dart';
@@ -16,6 +17,7 @@ class SearchFieldBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 360.h,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -25,8 +27,7 @@ class SearchFieldBottomSheet extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           SizedBox(height: Values.height10),
           Align(
@@ -82,20 +83,23 @@ class SearchFieldBottomSheet extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.add),
+                icon: const Icon(Icons.add_outlined),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             ],
           ),
           Card(
             elevation: 4,
             color: Theme.of(context).scaffoldBackgroundColor,
+            margin: EdgeInsets.zero,
             child: const ListTile(
               title: Text('Home'),
               subtitle: Text('Gondar Arada'),
               trailing: Icon(Icons.edit),
             ),
           ),
-          SizedBox(height: Values.height20),
+          // SizedBox(height: Values.height20),
         ],
       ),
     );
