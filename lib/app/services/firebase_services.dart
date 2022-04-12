@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:uber_clone_passenger/app/models/passenger.dart';
 import 'package:uber_clone_passenger/app/utils/enums.dart';
+import 'package:uber_clone_passenger/app/utils/global_variable.dart';
 
 import '../../firebase_options.dart';
 
@@ -73,5 +77,17 @@ class FirebaseServices {
           return e.code;
       }
     }
+  }
+
+  static getCurrentUserInfo() {
+    final user = getCurrentUser();
+    if (user == null) return;
+    String id = user.uid;
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref().child('passengers/$id');
+    dbRef.once().then((value) {
+      final snapShot = value.snapshot;
+      currentUserInfo = Passenger.fromSnapshot(snapShot);
+      log(currentUserInfo!.fullName);
+    });
   }
 }

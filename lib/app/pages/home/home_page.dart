@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show Completer;
 import 'dart:developer';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
@@ -10,14 +10,14 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:uber_clone_passenger/app/exports/constants.dart';
-import 'package:uber_clone_passenger/app/exports/helpers.dart';
-import 'package:uber_clone_passenger/app/exports/services.dart';
-import 'package:uber_clone_passenger/app/exports/widgets.dart';
 import 'package:uber_clone_passenger/app/models/address_model.dart';
+import 'package:uber_clone_passenger/app/models/passenger.dart';
 import 'package:uber_clone_passenger/app/models/ride_details_model.dart';
-import 'package:uber_clone_passenger/app/pages/home/widgets/search_field_bottom_sheet.dart';
 
+import '../../exports/widgets.dart';
+import '../../exports/services.dart';
+import '../../exports/helpers.dart';
+import '../../exports/constants.dart';
 import '../../providers/address_provider.dart';
 import '../../services/home_page_services.dart';
 import 'widgets/my_drawer.dart';
@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   GoogleMapController? _googleMapController;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController searchController = TextEditingController();
+  Passenger? currentUserInfo;
 
   double bottomPadding = 0;
   bool? isDarkMode;
@@ -45,6 +46,12 @@ class _HomePageState extends State<HomePage> {
 
   List<LatLng> polyLineCoordinates = [];
   Set<Polyline> polyLines = {};
+
+  @override
+  void initState() {
+    FirebaseServices.getCurrentUserInfo();
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -158,7 +165,6 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       Navigator.of(context).pop();
       if (rideDetails == Operation.failed) return;
-      log(rideDetails!.durationText);
 
       PolylinePoints polylinePoints = PolylinePoints();
       List<PointLatLng> results = polylinePoints.decodePolyline(rideDetails.encodedPoints);
@@ -210,7 +216,7 @@ class _HomePageState extends State<HomePage> {
         markerId: const MarkerId('end'),
         position: endPos,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: InfoWindow(title: 'Destination Address', snippet: pickUp.placeName),
+        infoWindow: InfoWindow(title: 'Destination Address', snippet: destination.placeName),
       );
 
       markers.addAll({startMarker, endMarker});
@@ -246,7 +252,6 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.orangeAccent,
         textColor: Colors.black,
       );
-      log(e.toString());
     }
   }
 
@@ -336,7 +341,7 @@ class RideDetailsBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 385.h,
+      height: 360.h,
       padding: EdgeInsets.symmetric(
         horizontal: Values.width20,
         vertical: Values.height10,
@@ -360,93 +365,141 @@ class RideDetailsBottomSheet extends StatelessWidget {
               IconButton(
                 onPressed: onCloseButtonPressed,
                 icon: const Icon(
-                  Icons.close,
+                  Icons.close_outlined,
                   color: Colors.red,
                 ),
               ),
             ],
           ),
-          SizedBox(height: Values.height10),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
+          Image.network(
+            'https://content.jdmagicbox.com/quickquotes/images_main/tvs-three-wheelers-15-01-2021-021-220038788-p7594.png',
+            height: 120.h,
+            width: 160.w,
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        const MyText(
-                          text: 'Distance: ',
-                          textColor: Colors.grey,
-                          fontSize: 12,
-                        ),
-                        MyText(
-                          text: rideDetails.distanceText,
-                          textColor: Theme.of(context).textTheme.bodyText2!.color,
-                          fontSize: 16,
-                        ),
-                      ],
+                    const MyText(
+                      text: 'Distance: ',
+                      textColor: Colors.grey,
+                      fontSize: 12,
                     ),
-                    SizedBox(height: Values.height10),
-                    Row(
-                      children: [
-                        const MyText(
-                          text: 'Price: ',
-                          textColor: Colors.grey,
-                          fontSize: 12,
-                        ),
-                        MyText(
-                          text: '${HomePageServices.estimateFares(rideDetails)} Birr',
-                          textColor: Theme.of(context).textTheme.bodyText2!.color,
-                          fontSize: 16,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: Values.height10),
-                    Row(
-                      children: [
-                        const MyText(
-                          text: 'Approximate time: ',
-                          textColor: Colors.grey,
-                          fontSize: 12,
-                        ),
-                        MyText(
-                          text: rideDetails.durationText,
-                          textColor: Theme.of(context).textTheme.bodyText2!.color,
-                          fontSize: 16,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: Values.height10),
-                    Row(
-                      children: [
-                        const MyText(
-                          text: 'Payment type: ',
-                          textColor: Colors.grey,
-                          fontSize: 12,
-                        ),
-                        MyText(
-                          text: 'Cash',
-                          textColor: Theme.of(context).textTheme.bodyText2!.color,
-                          fontSize: 16,
-                        ),
-                      ],
+                    MyText(
+                      text: rideDetails.distanceText,
+                      textColor: Theme.of(context).textTheme.bodyText2!.color,
+                      fontSize: 16,
                     ),
                   ],
                 ),
-              ),
-              Image.network(
-                'https://content.jdmagicbox.com/quickquotes/images_main/tvs-three-wheelers-15-01-2021-021-220038788-p7594.png',
-                height: 150,
-                width: 120,
-              ),
-            ],
+                Row(
+                  children: [
+                    const MyText(
+                      text: 'Price: ',
+                      textColor: Colors.grey,
+                      fontSize: 12,
+                    ),
+                    MyText(
+                      text: '${HomePageServices.estimateFares(rideDetails)} Birr',
+                      textColor: Theme.of(context).textTheme.bodyText2!.color,
+                      fontSize: 16,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const MyText(
+                      text: 'Approximate time: ',
+                      textColor: Colors.grey,
+                      fontSize: 12,
+                    ),
+                    MyText(
+                      text: rideDetails.durationText,
+                      textColor: Theme.of(context).textTheme.bodyText2!.color,
+                      fontSize: 16,
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const MyText(
+                      text: 'Payment type: ',
+                      textColor: Colors.grey,
+                      fontSize: 12,
+                    ),
+                    MyText(
+                      text: 'Cash',
+                      textColor: Theme.of(context).textTheme.bodyText2!.color,
+                      fontSize: 16,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           MyElevatedButton(
             child: const MyText(
               text: 'Request a Ride',
               textColor: Coloors.whiteBg,
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pop(context);
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                barrierColor: Colors.black26,
+                isDismissible: false,
+                enableDrag: false,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(Values.radius30),
+                  ),
+                ),
+                builder: (context) {
+                  return Container(
+                    height: 180.h,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Values.width20,
+                      vertical: Values.height10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(Values.radius30),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        LinearProgressIndicator(
+                          color: Theme.of(context).primaryColor,
+                          backgroundColor: Colors.grey[200],
+                        ),
+                        const MyText(text: 'Requesting a Ride...', fontSize: 20),
+                        Column(
+                          children: [
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.red,
+                              ),
+                            ),
+                            const MyText(
+                              text: 'Cancel Ride',
+                              fontFamily: 'Bolt-Reg',
+                              fontSize: 13,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
